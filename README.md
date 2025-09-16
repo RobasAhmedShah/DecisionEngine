@@ -1,27 +1,44 @@
 # 🏦 Credit Card Decision Engine
 
 ## 📋 **Overview**
-A modular credit card decision engine that evaluates loan applications using weighted scoring across 6 risk assessment modules.
+A full-stack Next.js application with a modular credit card decision engine that evaluates loan applications using weighted scoring across multiple risk assessment modules. The system features both frontend and backend APIs with TypeScript modules and real-time decision processing.
 
 ## 🏗️ **Architecture**
 
-### **Module Structure:**
+### **Current Architecture (Next.js Full-Stack):**
 ```
 DecisinEng/
-├── modules/
-│   ├── SPU.js              # Special Purpose Unit (Blacklist checks)
-│   ├── EAMVU.js            # External Asset Management Unit
-│   ├── City.js             # Geographic risk assessment
-│   ├── Age.js              # Demographic risk assessment
-│   ├── DBR.js              # Debt-to-Income Ratio calculation
-│   ├── Income.js           # Financial capacity evaluation
-│   ├── DecisionEngine.js   # Main decision orchestrator
-│   └── DataService.js      # API and data handling
-├── CreditCardDecisionEngine.js  # Main entry point
-├── frontend.js             # Frontend JavaScript (UI logic)
-├── index.html              # Frontend interface (HTML only)
-└── README.md               # This file
+├── app/                           # Next.js App Router
+│   ├── api/                       # Backend API Routes
+│   │   ├── applications/[id]/     # Fetch application data
+│   │   ├── decision/              # Calculate decisions
+│   │   └── process/               # Full processing pipeline
+│   ├── layout.tsx                 # Root layout
+│   ├── page.tsx                   # Main frontend application
+│   └── globals.css                # Global styles
+├── lib/modules/                   # TypeScript Decision Modules (ACTIVE)
+│   ├── SPU.ts                     # Special Purpose Unit
+│   ├── EAMVU.ts                   # External Asset Management Unit
+│   ├── City.ts                    # Geographic risk assessment
+│   ├── Age.ts                     # Demographic risk assessment
+│   ├── DBR.ts                     # Debt-to-Income Ratio calculation
+│   ├── Income.ts                  # Financial capacity evaluation
+│   ├── DecisionEngine.ts          # Main decision orchestrator
+│   └── DataService.ts             # API and data handling
+├── components/ui/                 # Reusable UI components
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── input.tsx
+│   └── select.tsx
+└── package.json                   # Dependencies and scripts
 ```
+
+### **Frontend-to-Backend Flow:**
+1. **Frontend (React/Next.js)**: `app/page.tsx` - Interactive UI with real-time scoring
+2. **API Layer**: Next.js API routes handle HTTP requests
+3. **Business Logic**: TypeScript modules in `lib/modules/` process decisions
+4. **External APIs**: Fetches data from external application APIs
+5. **Response**: JSON decision results with detailed scoring breakdown
 
 ## 🎯 **Module Weights**
 - **DBR (Debt-to-Income Ratio):** 55% - Primary risk indicator
@@ -106,31 +123,44 @@ DecisinEng/
 
 ## 🚀 **Usage**
 
-### **Browser:**
-```html
-<!-- Load all modules in order -->
-<script src="modules/SPU.js"></script>
-<script src="modules/EAMVU.js"></script>
-<script src="modules/City.js"></script>
-<script src="modules/Age.js"></script>
-<script src="modules/DBR.js"></script>
-<script src="modules/Income.js"></script>
-<script src="modules/DecisionEngine.js"></script>
-<script src="modules/DataService.js"></script>
-<script src="CreditCardDecisionEngine.js"></script>
-<script src="frontend.js"></script>
+### **Development:**
+```bash
+# Install dependencies
+npm install
 
-<script>
-const engine = new CreditCardDecisionEngine();
-const result = await engine.processApplication(141);
-</script>
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
 ```
 
-### **Node.js:**
+### **Frontend Interface:**
+- Navigate to `http://localhost:3000`
+- Enter Application ID to fetch data from external API
+- Configure manual inputs (cluster, employment type, etc.)
+- Click "Calculate Decision" for real-time processing
+- View detailed scoring breakdown and final decision
+
+### **API Endpoints:**
 ```javascript
-const CreditCardDecisionEngine = require('./CreditCardDecisionEngine');
-const engine = new CreditCardDecisionEngine();
-const result = await engine.processApplication(141);
+// Fetch application data
+GET /api/applications/[id]
+
+// Calculate decision with custom data
+POST /api/decision
+{
+  "applicationData": { ... }
+}
+
+// Full processing pipeline
+POST /api/process
+{
+  "applicationId": 141
+}
 ```
 
 ## 🔧 **Configuration**
@@ -173,12 +203,83 @@ const result = await engine.processApplication(141);
 - **Extensibility:** Easy to add new modules or modify existing ones
 - **Testing:** Each module can be tested independently
 
-## 🔄 **Migration from Monolithic**
+## 📁 **File Organization Analysis**
 
-The original `Deceng.js` has been split into:
-- **6 functional modules** (SPU, EAMVU, City, Age, DBR, Income)
-- **1 orchestration module** (DecisionEngine)
-- **1 data service module** (DataService)
-- **1 main interface** (CreditCardDecisionEngine)
+### **✅ Current Active Files (Microservice Architecture):**
+- `app/page.tsx` - Main frontend application (2,188 lines) ✅ **ACTIVE**
+- `app/api/*/route.ts` - API endpoints (3 routes) ✅ **ACTIVE**
+  - `/api/applications/[id]` - Fetch application data
+  - `/api/decision` - Calculate decisions (orchestrates microservices)
+  - `/api/process` - Full processing pipeline
+- `lib/CreditCardDecisionEngine.ts` - **NEW**: Microservice orchestrator ✅ **ACTIVE**
+- `lib/modules/` - **NEW**: Individual microservice modules ✅ **ACTIVE**
+  - `SPUModule.ts` - Security & Risk Assessment (Team 1)
+  - `EAMVUModule.ts` - Asset Verification & Documentation (Team 2)
+  - `CityModule.ts` - Geographic Risk & Coverage Analysis (Team 3)
+  - `AgeModule.ts` - Demographics & Employment Analysis (Team 4)
+  - `IncomeModule.ts` - Financial Analysis & Income Verification (Team 5)
+  - `DBRModule.ts` - Credit Risk & Debt Analysis (Team 6)
+- `lib/modules/DataService.ts` - Data fetching service ✅ **ACTIVE**
+- `components/ui/*.tsx` - Reusable UI components (4 components) ✅ **ACTIVE**
+- `TEAM_STRUCTURE.md` - **NEW**: Team distribution and development guide ✅ **ACTIVE**
+- `package.json` - Dependencies and build configuration ✅ **ACTIVE**
 
-All functionality remains intact while providing better organization and maintainability.
+### **❌ Redundant/Legacy Files (Can be safely deleted):**
+- `modules/*.js` - **DUPLICATE**: JavaScript versions (replaced by TypeScript)
+- `lib/modules/*.ts` - **INCOMPLETE**: Partial TypeScript modules (replaced by complete engine)
+- `Deceng.js` - **LEGACY**: Original monolithic implementation (logic moved to TypeScript)
+- `app/page_old.tsx` - **BACKUP**: Previous version
+- `app/page_clean.tsx` - **BACKUP**: Alternative version
+- `CreditCardDecisionEngine.js` - **LEGACY**: JavaScript version (replaced by TypeScript)
+
+### **🔧 Recommendations:**
+1. **✅ COMPLETED**: Created microservice architecture with separate modules
+2. **✅ COMPLETED**: Team-based development structure implemented
+3. **✅ COMPLETED**: All calculations preserved from original `Deceng.js` logic
+4. **✅ COMPLETED**: TypeScript interfaces and error handling added
+5. **✅ COMPLETED**: Independent module testing capabilities
+6. **NEXT**: Assign teams to specific modules using `TEAM_STRUCTURE.md`
+7. **OPTIONAL**: Clean up redundant files to reduce clutter
+
+## 🔄 **Architecture Evolution**
+
+### **Migration Path:**
+1. **Original**: Monolithic `Deceng.js` (1,302 lines)
+2. **Modular**: Split into JavaScript modules in `modules/`
+3. **TypeScript**: Converted to TypeScript modules in `lib/modules/` (incomplete)
+4. **Full-Stack**: Added Next.js frontend and API routes
+5. **ISSUE**: Calculations stopped working when `Deceng.js` was deleted
+6. **✅ SOLUTION 1**: Created `lib/CreditCardDecisionEngine.ts` with complete logic
+7. **✅ SOLUTION 2**: Refactored into microservice architecture for team distribution
+8. **Current**: Microservice-based architecture with 6 independent modules
+
+### **Technical Stack:**
+- **Frontend**: React, Next.js 14, TypeScript
+- **Backend**: Next.js API Routes, TypeScript
+- **Architecture**: Microservices with 6 independent modules
+- **Decision Engine**: Orchestrator pattern with module delegation
+- **Team Distribution**: 6 teams, each owning a specific module
+- **UI**: Custom components with modern styling
+- **Build**: Next.js build system with TypeScript compilation
+
+## 🛠️ **Problem & Solution**
+
+### **The Issue:**
+When `Deceng.js` was deleted, the calculation system stopped working because:
+- The frontend calls API routes (`/api/decision`)
+- API routes were using incomplete TypeScript modules in `lib/modules/`
+- These modules had basic implementations but missing the complete logic from `Deceng.js`
+
+### **The Solution:**
+1. **Created `lib/CreditCardDecisionEngine.ts`** - Complete TypeScript decision engine
+2. **Preserved ALL calculation logic** - Exact functions from `Deceng.js` (SPU, EAMVU, City, Age, Income, DBR)
+3. **Updated API routes** - Now use the complete TypeScript engine
+4. **Maintained Next.js compatibility** - Proper TypeScript imports and error handling
+5. **Kept original behavior** - All console logging and calculation steps preserved
+
+### **Result:**
+✅ Calculations now work exactly as before
+✅ TypeScript compatible with proper type definitions
+✅ Next.js API routes function correctly
+✅ Frontend receives complete decision results
+✅ All original calculation logic preserved

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { testCases, getTestCaseById } from '../lib/testCases';
 
 // Type definitions
 interface ApplicationData {
@@ -117,9 +118,18 @@ export default function CreditCardDecisionEngine() {
   const [showFinalDecision, setShowFinalDecision] = useState(false);
   const [moduleScores, setModuleScores] = useState<ModuleScore[]>([]);
   
+  // New framework states
+  const [assignedCreditLimit, setAssignedCreditLimit] = useState(0);
+  const [cardType, setCardType] = useState('');
+  
   // Progress bar refs
   const finalScoreProgressRef = useRef<HTMLDivElement>(null);
   const finalScoreLabelRef = useRef<HTMLSpanElement>(null);
+  
+  // Test case states
+  const [selectedTestCase, setSelectedTestCase] = useState<string>('');
+  const [showTestCaseDropdown, setShowTestCaseDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Expanded sections state
   const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
@@ -141,8 +151,8 @@ export default function CreditCardDecisionEngine() {
   const fetchApplicationData = async () => {
     setLoading(true);
     try {
-      // Use Next.js API route
-      const response = await fetch(`http://localhost:5000/api/applications/${applicationId}`);
+      // Use direct external API
+      const response = await fetch(`/api/applications/${applicationId}`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -279,21 +289,24 @@ export default function CreditCardDecisionEngine() {
         spu_ctl_check: false,
         spu_frmu_check: false,
         spu_ecib_check: false,
-        eavmu_submitted: applicationData.eavmu_submitted
+        eavmu_submitted: applicationData.eavmu_submitted,
+        amount_requested: applicationData.amountRequested
       };
       
       console.log('📥 ILOS Data:', ilosData);
       console.log('📥 CBS Data:', cbsData);
       
-      // Call the new decision engine API
-      const response = await fetch('http://localhost:5000/api/decision', {
+      // Call the direct external API
+      const response = await fetch('/api/decision', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           applicationData: ilosData,
-          cbsData: cbsData
+          cbsData: cbsData,
+          systemChecksData: selectedTestCase ? testCases.find(tc => tc.id === selectedTestCase)?.systemChecksData : null,
+          creditLimitData: selectedTestCase ? testCases.find(tc => tc.id === selectedTestCase)?.creditLimitData : null
         })
       });
 
@@ -330,10 +343,10 @@ export default function CreditCardDecisionEngine() {
     setIncomeScore(decision.moduleScores?.income?.score || 0);
     setSpuScore(decision.moduleScores?.spu?.score || 0);
     setEamvuScore(decision.moduleScores?.eamvu?.score || 0);
-    setApplicationScore(decision.moduleScores?.application_score?.score || 0);
-    setBehavioralScore(decision.moduleScores?.behavioral_score?.score || 0);
+    setApplicationScore(decision.moduleScores?.applicationScore?.score || 0);
+    setBehavioralScore(decision.moduleScores?.behavioralScore?.score || 0);
     // Get ETB status from multiple sources
-    const isETBFromBehavioral = decision.moduleScores?.behavioral_score?.details?.isETB;
+    const isETBFromBehavioral = decision.moduleScores?.behavioralScore?.details?.isETB;
     const isETBFromApp = decision.applicationData?.is_ubl_customer === true || decision.applicationData?.is_ubl_customer === 'true';
     const isETB = isETBFromBehavioral !== undefined ? isETBFromBehavioral : isETBFromApp;
     setIsETB(isETB);
@@ -345,35 +358,33 @@ export default function CreditCardDecisionEngine() {
     console.log('  • Income Score:', decision.moduleScores?.income?.score);
     console.log('  • SPU Score:', decision.moduleScores?.spu?.score);
     console.log('  • EAMVU Score:', decision.moduleScores?.eamvu?.score);
-    console.log('  • Application Score:', decision.moduleScores?.application_score?.score);
-    console.log('  • Behavioral Score:', decision.moduleScores?.behavioral_score?.score);
-    console.log('  • Behavioral Details:', decision.moduleScores?.behavioral_score?.details);
-    console.log('  • Is ETB from details:', decision.moduleScores?.behavioral_score?.details?.isETB);
-    console.log('  • Is ETB type:', typeof decision.moduleScores?.behavioral_score?.details?.isETB);
+    console.log('  • Application Score:', decision.moduleScores?.applicationScore?.score);
+    console.log('  • Behavioral Score:', decision.moduleScores?.behavioralScore?.score);
+    console.log('  • Behavioral Details:', decision.moduleScores?.behavioralScore?.details);
+    console.log('  • Is ETB from details:', decision.moduleScores?.behavioralScore?.details?.isETB);
+    console.log('  • Is ETB type:', typeof decision.moduleScores?.behavioralScore?.details?.isETB);
     console.log('  • Application Data is_ubl_customer:', decision.applicationData?.is_ubl_customer);
     console.log('  • Is ETB from app:', isETBFromApp);
     console.log('  • Final isETB:', isETB);
     
     // Enhanced DBR calculation display with detailed info
-    const dbrDetails = decision.dbrDetails || {};
-    const dbrInfo = dbrDetails.percentage !== undefined ? 
-      `DBR: ${decision.moduleScores?.dbr?.score || 0}/100 (${dbrDetails.percentage?.toFixed(2) || 0}%)` :
-      `DBR: ${decision.moduleScores?.dbr?.score || 0}/100 (${decision.dbrPercentage || 0}%)`;
+    const dbrDetails = decision.moduleScores?.dbr?.details || {};
+    const dbrInfo = `DBR: ${decision.moduleScores?.dbr?.score || 0}/100 (${dbrDetails.dbrPercentage?.toFixed(2) || 0}%)`;
     
     // Enhanced SPU calculation display
-    const spuDetails = decision.spuDetails || {};
+    const spuDetails = decision.moduleScores?.spu?.details || {};
     const spuInfo = spuDetails.anyHit ? 
       `SPU: ${decision.moduleScores?.spu?.score || 0}/100 (Critical Hit)` :
       `SPU: ${decision.moduleScores?.spu?.score || 0}/100 (Clean)`;
     
     // Enhanced EAMVU calculation display
-    const eamvuDetails = decision.eamvuDetails || {};
+    const eamvuDetails = decision.moduleScores?.eamvu?.details || {};
     const eamvuInfo = eamvuDetails.submitted ? 
       `EAMVU: ${decision.moduleScores?.eamvu?.score || 0}/100 (Approved)` :
       `EAMVU: ${decision.moduleScores?.eamvu?.score || 0}/100 (Not Approved)`;
     
     // Enhanced Income calculation display
-    const incomeDetails = decision.incomeDetails || {};
+    const incomeDetails = decision.moduleScores?.income?.details || {};
     const incomeInfo = incomeDetails.thresholdMet ? 
       `Income: ${decision.moduleScores?.income?.score || 0}/100 (Threshold Met)` :
       `Income: ${decision.moduleScores?.income?.score || 0}/100 (Threshold Not Met)`;
@@ -392,31 +403,35 @@ export default function CreditCardDecisionEngine() {
     setRiskLevel(decision.riskLevel || 'UNKNOWN');
     setActionRequired(decision.actionRequired || 'None');
     
+    // Update new framework fields
+    setAssignedCreditLimit(decision.assignedCreditLimit || 0);
+    setCardType(decision.cardType || '');
+    
     // Enhanced weighted calculations with new structure
     const customerType = isETB ? 'ETB' : 'NTB';
     const applicationWeight = isETB ? '10%' : '15%';
     const behavioralWeight = isETB ? '5%' : '0%';
     
     const weightedCalc = `
-      DBR: ${decision.moduleScores?.dbr?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.dbr?.score || 0} × 0.55)
-        - Percentage: ${dbrDetails.percentage?.toFixed(2) || 0}%
-        - Threshold: ${dbrDetails.threshold || 0}%
+      DBR: ${((decision.moduleScores?.dbr?.score || 0) * 0.55).toFixed(2)} (${decision.moduleScores?.dbr?.score || 0} × 0.55)
+        - Percentage: ${dbrDetails.dbrPercentage?.toFixed(2) || 0}%
+        - Threshold: ${dbrDetails.dbrThreshold || 0}%
         - Net Income: PKR ${dbrDetails.netIncome?.toLocaleString() || 0}
         - Total Obligations: PKR ${dbrDetails.totalObligations?.toLocaleString() || 0}
-        - Status: ${dbrDetails.status || 'UNKNOWN'}
+        - Status: ${dbrDetails.decisionBand || 'UNKNOWN'}
       
-      Age: ${decision.moduleScores?.age?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.age?.score || 0} × 0.05)
+      Age: ${((decision.moduleScores?.age?.score || 0) * 0.05).toFixed(2)} (${decision.moduleScores?.age?.score || 0} × 0.05)
         - Age: ${decision.moduleScores?.age?.details?.age || 0} years
         - Band: ${decision.moduleScores?.age?.details?.band || 'N/A'}
-        - Within Range: ${decision.moduleScores?.age?.details?.withinRange ? 'YES' : 'NO'}
+        - Hard Stop: ${decision.moduleScores?.age?.details?.hardStop ? 'YES' : 'NO'}
       
-      City: ${decision.moduleScores?.city?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.city?.score || 0} × 0.05)
+      City: ${((decision.moduleScores?.city?.score || 0) * 0.05).toFixed(2)} (${decision.moduleScores?.city?.score || 0} × 0.05)
         - Current City: ${decision.moduleScores?.city?.details?.currentCity || 'N/A'}
         - Office City: ${decision.moduleScores?.city?.details?.officeCity || 'N/A'}
         - Cluster: ${decision.moduleScores?.city?.details?.cluster || 'N/A'}
-        - Full Coverage: ${decision.moduleScores?.city?.details?.fullCoverage ? 'YES' : 'NO'}
+        - City Score: ${decision.moduleScores?.city?.details?.cityScore || 0}/100
       
-      Income: ${decision.moduleScores?.income?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.income?.score || 0} × 0.10)
+      Income: ${((decision.moduleScores?.income?.score || 0) * 0.10).toFixed(2)} (${decision.moduleScores?.income?.score || 0} × 0.10)
         - Gross Income: PKR ${incomeDetails.grossIncome?.toLocaleString() || 0}
         - Net Income: PKR ${incomeDetails.netIncome?.toLocaleString() || 0}
         - Employment Type: ${incomeDetails.employmentType || 'N/A'}
@@ -425,44 +440,57 @@ export default function CreditCardDecisionEngine() {
         - ETB Customer: ${incomeDetails.isETB ? 'YES' : 'NO'}
         - Stability Ratio: ${((incomeDetails.stabilityRatio || 0) * 100).toFixed(1)}%
       
-      SPU: ${decision.moduleScores?.spu?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.spu?.score || 0} × 0.05)
+      SPU: ${((decision.moduleScores?.spu?.score || 0) * 0.05).toFixed(2)} (${decision.moduleScores?.spu?.score || 0} × 0.05)
         - Black List: ${spuDetails.blackListHit ? 'HIT' : 'CLEAN'}
         - Credit Card 30k: ${spuDetails.creditCard30kHit ? 'HIT' : 'CLEAN'}
         - Negative List: ${spuDetails.negativeListHit ? 'HIT' : 'CLEAN'}
         - Status: ${spuDetails.anyHit ? 'CRITICAL HIT' : 'CLEAN'}
       
-      EAMVU: ${decision.moduleScores?.eamvu?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.eamvu?.score || 0} × 0.05)
+      EAMVU: ${((decision.moduleScores?.eamvu?.score || 0) * 0.05).toFixed(2)} (${decision.moduleScores?.eamvu?.score || 0} × 0.05)
         - Submitted: ${eamvuDetails.submitted ? 'YES' : 'NO'}
         - Status: ${eamvuDetails.submitted ? 'APPROVED' : 'NOT APPROVED'}
       
-      Application: ${decision.moduleScores?.application_score?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.application_score?.score || 0} × ${applicationWeight})
+      Application: ${((decision.moduleScores?.applicationScore?.score || 0) * parseFloat(applicationWeight) / 100).toFixed(2)} (${decision.moduleScores?.applicationScore?.score || 0} × ${applicationWeight})
         - Customer Type: ${customerType}
-        - Education: ${decision.moduleScores?.application_score?.breakdown?.education || 0}/100
-        - Marital Status: ${decision.moduleScores?.application_score?.breakdown?.marital_status || 0}/100
-        - Employment: ${decision.moduleScores?.application_score?.breakdown?.employment_status || 0}/100
-        - Net Income: ${decision.moduleScores?.application_score?.breakdown?.net_income || 0}/100
-        - Employment Length: ${decision.moduleScores?.application_score?.breakdown?.length_of_employment || 0}/100
-        - Portfolio Type: ${decision.moduleScores?.application_score?.breakdown?.portfolio_type || 0}/100
-        - Deposits: ${decision.moduleScores?.application_score?.breakdown?.deposits || 0}/100
-        - Note: Excludes Age, City, DBR (calculated separately)
+        - Education: ${decision.moduleScores?.applicationScore?.details?.breakdown?.education || 0}/100
+        - Marital Status: ${decision.moduleScores?.applicationScore?.details?.breakdown?.marital_status || 0}/100
+        - Employment: ${decision.moduleScores?.applicationScore?.details?.breakdown?.employment_status || 0}/100
+        - Net Income: ${decision.moduleScores?.applicationScore?.details?.breakdown?.net_income || 0}/100
+        - Employment Length: ${decision.moduleScores?.applicationScore?.details?.breakdown?.length_of_employment || 0}/100
+        - Portfolio Type: ${decision.moduleScores?.applicationScore?.details?.breakdown?.portfolio_type || 0}/100
+        - Deposits: ${decision.moduleScores?.applicationScore?.details?.breakdown?.deposits || 0}/100
       
-      Behavioral: ${decision.moduleScores?.behavioral_score?.weightedScore?.toFixed(2) || 0} (${decision.moduleScores?.behavioral_score?.score || 0} × ${behavioralWeight})
+      Behavioral: ${((decision.moduleScores?.behavioralScore?.score || 0) * parseFloat(behavioralWeight) / 100).toFixed(2)} (${decision.moduleScores?.behavioralScore?.score || 0} × ${behavioralWeight})
         - Customer Type: ${customerType}
         - Calculated: ${isETB ? 'YES' : 'NO'}
         ${isETB ? `
-        - Bad Counts Industry: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.bad_counts_industry || 0}/100
-        - Bad Counts UBL: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.bad_counts_ubl || 0}/100
-        - DPD 30+: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.dpd_30_plus || 0}/100
-        - DPD 60+: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.dpd_60_plus || 0}/100
-        - Defaults 12M: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.defaults_12m || 0}/100
-        - Late Payments: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.late_payments || 0}/100
-        - Avg Deposit Balance: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.avg_deposit_balance || 0}/100
-        - Partial Payments: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.partial_payments || 0}/100
-        - Credit Utilization: ${decision.moduleScores?.behavioral_score?.details?.breakdown?.credit_utilization || 0}/100
+        - Bad Counts Industry: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.bad_counts_industry || 0}/100
+        - Bad Counts UBL: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.bad_counts_ubl || 0}/100
+        - DPD 30+: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.dpd_30_plus || 0}/100
+        - DPD 60+: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.dpd_60_plus || 0}/100
+        - Defaults 12M: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.defaults_12m || 0}/100
+        - Late Payments: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.late_payments || 0}/100
+        - Avg Deposit Balance: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.avg_deposit_balance || 0}/100
+        - Partial Payments: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.partial_payments || 0}/100
+        - Credit Utilization: ${decision.moduleScores?.behavioralScore?.details?.breakdown?.credit_utilization || 0}/100
         ` : `
         - Note: Not calculated for NTB customers
         `}
-        - Threshold Met: ${incomeDetails.thresholdMet ? 'YES' : 'NO'}
+      
+      System Checks: ${decision.moduleScores?.systemChecks?.score || 0}/100
+        - Overall Status: ${decision.moduleScores?.systemChecks?.details?.overallStatus || 'UNKNOWN'}
+        - Decision: ${decision.moduleScores?.systemChecks?.details?.decision || 'UNKNOWN'}
+        - eCIB: ${decision.moduleScores?.systemChecks?.details?.details?.ecib?.status || 'UNKNOWN'}
+        - VERISYS: ${decision.moduleScores?.systemChecks?.details?.details?.verisys?.status || 'UNKNOWN'}
+        - AFD: ${decision.moduleScores?.systemChecks?.details?.details?.afd?.status || 'UNKNOWN'}
+        - PEP: ${decision.moduleScores?.systemChecks?.details?.details?.pep?.status || 'UNKNOWN'}
+        - World Check: ${decision.moduleScores?.systemChecks?.details?.details?.worldCheck?.status || 'UNKNOWN'}
+      
+      Credit Limit: ${decision.moduleScores?.creditLimit?.score || 0}/100
+        - Assigned Limit: PKR ${decision.moduleScores?.creditLimit?.details?.assignedLimit?.toLocaleString() || 0}
+        - Card Type: ${decision.moduleScores?.creditLimit?.details?.cardType || 'N/A'}
+        - Decision: ${decision.moduleScores?.creditLimit?.details?.decision || 'UNKNOWN'}
+        - Reason: ${decision.moduleScores?.creditLimit?.details?.reason || 'N/A'}
       
       Total: ${decision.finalScore || 0}/100
     `;
@@ -474,6 +502,78 @@ export default function CreditCardDecisionEngine() {
     setFinalScoreStatus('COMPLETE');
     
     console.log('✅ UI Updated with Enhanced Decision Result');
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowTestCaseDropdown(false);
+      }
+    };
+
+    if (showTestCaseDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTestCaseDropdown]);
+
+  // Load test case data
+  const loadTestCaseData = (testCaseId: string) => {
+    try {
+      const testCase = getTestCaseById(testCaseId);
+      if (!testCase) {
+        throw new Error('Test case not found');
+      }
+      
+      // Map test case data to applicationData structure
+      const mappedApplicationData = {
+        applicationId: testCase.applicationData.applicationId || 0,
+        customerName: testCase.applicationData.full_name || '',
+        cnic: testCase.applicationData.cnic || '',
+        dateOfBirth: testCase.applicationData.date_of_birth || '',
+        age: testCase.applicationData.date_of_birth ? 
+          new Date().getFullYear() - new Date(testCase.applicationData.date_of_birth).getFullYear() : 0,
+        grossMonthlySalary: testCase.applicationData.gross_monthly_income || 0,
+        netMonthlyIncome: testCase.applicationData.net_monthly_income || 0,
+        currentCity: testCase.applicationData.curr_city || '',
+        officeCity: testCase.applicationData.office_city || '',
+        cluster: testCase.applicationData.cluster || '',
+        ublCustomer: testCase.applicationData.is_ubl_customer ? 'Yes' : 'No',
+        employmentStatus: testCase.applicationData.employment_status || '',
+        employmentType: testCase.applicationData.employment_type || '',
+        experience: testCase.applicationData.length_of_employment || 0,
+        educationQualification: testCase.applicationData.education_qualification || '',
+        maritalStatus: testCase.applicationData.marital_status || '',
+        eamvuStatus: testCase.applicationData.eavmu_submitted ? 'Yes' : 'No',
+        eavmu_submitted: testCase.applicationData.eavmu_submitted,
+        salaryTransferFlag: testCase.applicationData.salary_transfer_flag ? 'Yes' : 'No',
+        amountRequested: testCase.applicationData.proposed_loan_amount || 0,
+        spuBlackList: testCase.applicationData.spu_black_list_check ? 'Yes' : 'No',
+        spuCreditCard: testCase.applicationData.spu_credit_card_30k_check ? 'Yes' : 'No',
+        spuNegativeList: testCase.applicationData.spu_negative_list_check ? 'Yes' : 'No'
+      };
+      
+      // Set the application data
+      setApplicationData(mappedApplicationData);
+      setApplicationId(mappedApplicationData.applicationId.toString());
+      
+      // Set CBS data if available
+      if (testCase.cbsData) {
+        setDbrData(testCase.cbsData);
+      }
+      
+      setSelectedTestCase(testCaseId);
+      setShowTestCaseDropdown(false);
+      
+      console.log('✅ Test case loaded:', testCase.name);
+    } catch (error) {
+      console.error('❌ Error loading test case:', error);
+      alert('Error loading test case: ' + (error as Error).message);
+    }
   };
 
   // Load sample data
@@ -1387,22 +1487,133 @@ export default function CreditCardDecisionEngine() {
 
           {/* Action Buttons */}
             <div className="section">
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button 
-                onClick={loadSampleData}
-                style={{ 
-                  backgroundColor: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  padding: '12px 20px',
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+              {/* Test Case Dropdown */}
+              <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+                <button 
+                  onClick={() => setShowTestCaseDropdown(!showTestCaseDropdown)}
+                  style={{ 
+                    backgroundColor: selectedTestCase ? '#17a2b8' : '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  📋 {selectedTestCase ? 
+                    testCases.find(tc => tc.id === selectedTestCase)?.name || 'Test Case Loaded' : 
+                    'Load Sample Data'
+                  }
+                  <span style={{ fontSize: '12px' }}>▼</span>
+                </button>
+                
+                {showTestCaseDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    backgroundColor: 'white',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    zIndex: 1000,
+                    minWidth: '300px',
+                    maxHeight: '400px',
+                    overflowY: 'auto'
+                  }}>
+                    <div style={{
+                      padding: '12px',
+                      borderBottom: '1px solid #eee',
+                      backgroundColor: '#f8f9fa',
+                      fontWeight: '600',
+                      color: '#495057'
+                    }}>
+                      Select Test Case:
+                    </div>
+                    
+                    {/* Default Sample Data Option */}
+                    <div
+                      onClick={() => {
+                        loadSampleData();
+                        setShowTestCaseDropdown(false);
+                        setSelectedTestCase('');
+                      }}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid #eee',
+                        backgroundColor: selectedTestCase === '' ? '#e3f2fd' : 'white',
+                        color: '#1976d2',
+                        fontWeight: '500'
+                      }}
+                    >
+                      📄 Default Sample Data (John Doe)
+                    </div>
+                    
+                    {/* Test Cases */}
+                    {testCases.map((testCase) => (
+                      <div
+                        key={testCase.id}
+                        onClick={() => loadTestCaseData(testCase.id)}
+                        style={{
+                          padding: '12px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: selectedTestCase === testCase.id ? '#e3f2fd' : 'white',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedTestCase !== testCase.id) {
+                            e.currentTarget.style.backgroundColor = '#f8f9fa';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedTestCase !== testCase.id) {
+                            e.currentTarget.style.backgroundColor = 'white';
+                          }
+                        }}
+                      >
+                        <div style={{ fontWeight: '600', color: '#2d3748', marginBottom: '4px' }}>
+                          {testCase.name}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '2px' }}>
+                          {testCase.category.toUpperCase()} • Expected: {testCase.expectedDecision}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                          {testCase.description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Test Case Info */}
+              {selectedTestCase && (
+                <div style={{
+                  backgroundColor: '#e3f2fd',
+                  border: '1px solid #bbdefb',
                   borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: '600'
-                }}
-              >
-                📋 Load Sample Data
-              </button>
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  color: '#1976d2',
+                  maxWidth: '300px'
+                }}>
+                  <div style={{ fontWeight: '600', marginBottom: '2px' }}>
+                    {testCases.find(tc => tc.id === selectedTestCase)?.name}
+                  </div>
+                  <div>
+                    Expected: {testCases.find(tc => tc.id === selectedTestCase)?.expectedDecision} • 
+                    Score: {testCases.find(tc => tc.id === selectedTestCase)?.expectedScore}
+                  </div>
+                </div>
+              )}
               
               <button 
                 onClick={calculateDecision}
@@ -1812,8 +2023,186 @@ export default function CreditCardDecisionEngine() {
                         }}>
                           {actionRequired}
                         </p>
-            </div>
-          </div>
+                      </div>
+                    </div>
+                    
+                    {/* Credit Limit and Card Type Display */}
+                    {(assignedCreditLimit > 0 || cardType) && (
+                      <div style={{
+                        marginTop: '20px',
+                        padding: '15px',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        border: '1px solid #dee2e6'
+                      }}>
+                        <h4 style={{
+                          margin: '0 0 10px 0',
+                          fontSize: '1.1rem',
+                          color: '#495057',
+                          fontWeight: '600'
+                        }}>
+                          Credit Assignment
+                        </h4>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '15px',
+                          marginBottom: '20px'
+                        }}>
+                          {assignedCreditLimit > 0 && (
+                            <div>
+                              <strong style={{ color: '#495057' }}>Assigned Limit:</strong>
+                              <div style={{
+                                marginTop: '5px',
+                                fontSize: '1.2rem',
+                                fontWeight: '700',
+                                color: '#28a745'
+                              }}>
+                                PKR {assignedCreditLimit.toLocaleString()}
+                              </div>
+                            </div>
+                          )}
+                          {cardType && (
+                            <div>
+                              <strong style={{ color: '#495057' }}>Selected Card Type:</strong>
+                              <div style={{
+                                marginTop: '5px',
+                                padding: '6px 12px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                fontWeight: '600',
+                                backgroundColor: cardType === 'PLATINUM' ? '#6f42c1' : 
+                                               cardType === 'GOLD' ? '#ffc107' : '#6c757d',
+                                color: cardType === 'PLATINUM' ? '#ffffff' : 
+                                       cardType === 'GOLD' ? '#000000' : '#ffffff',
+                                display: 'inline-block'
+                              }}>
+                                {cardType}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card Eligibility Options */}
+                        <div style={{ marginTop: '20px' }}>
+                          <h5 style={{
+                            margin: '0 0 15px 0',
+                            color: '#495057',
+                            fontSize: '1rem',
+                            fontWeight: '600'
+                          }}>
+                            💳 Card Eligibility Options
+                          </h5>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '15px'
+                          }}>
+                            {[
+                              { 
+                                type: 'SILVER', 
+                                range: 'PKR 25,000 - 125,000',
+                                color: '#6c757d',
+                                textColor: '#ffffff'
+                              },
+                              { 
+                                type: 'GOLD', 
+                                range: 'PKR 125,001 - 299,999',
+                                color: '#ffc107',
+                                textColor: '#000000'
+                              },
+                              { 
+                                type: 'PLATINUM', 
+                                range: 'PKR 300,000 - 7,000,000',
+                                color: '#6f42c1',
+                                textColor: '#ffffff'
+                              }
+                            ].map((card) => {
+                              const isEligible = assignedCreditLimit >= (card.type === 'SILVER' ? 25000 : 
+                                                                        card.type === 'GOLD' ? 125001 : 300000);
+                              const isSelected = cardType === card.type;
+                              
+                              return (
+                                <div key={card.type} style={{
+                                  padding: '15px',
+                                  borderRadius: '12px',
+                                  border: isSelected ? '3px solid #007bff' : 
+                                         isEligible ? '2px solid #28a745' : '2px solid #dc3545',
+                                  backgroundColor: isSelected ? '#e3f2fd' : 
+                                                 isEligible ? '#f8fff8' : '#fff5f5',
+                                  position: 'relative'
+                                }}>
+                                  {isSelected && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      top: '-8px',
+                                      right: '-8px',
+                                      backgroundColor: '#007bff',
+                                      color: 'white',
+                                      borderRadius: '50%',
+                                      width: '24px',
+                                      height: '24px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold'
+                                    }}>
+                                      ✓
+                                    </div>
+                                  )}
+                                  
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    marginBottom: '10px'
+                                  }}>
+                                    <div style={{
+                                      padding: '6px 12px',
+                                      borderRadius: '20px',
+                                      fontSize: '0.8rem',
+                                      fontWeight: '600',
+                                      backgroundColor: card.color,
+                                      color: card.textColor,
+                                      display: 'inline-block'
+                                    }}>
+                                      {card.type}
+                                    </div>
+                                    <div style={{
+                                      fontSize: '0.8rem',
+                                      fontWeight: '600',
+                                      color: isEligible ? '#28a745' : '#dc3545'
+                                    }}>
+                                      {isEligible ? '✓ ELIGIBLE' : '✗ NOT ELIGIBLE'}
+                                    </div>
+                                  </div>
+                                  
+                                  <div style={{
+                                    fontSize: '0.9rem',
+                                    color: '#495057',
+                                    marginBottom: '8px'
+                                  }}>
+                                    <strong>Range:</strong> {card.range}
+                                  </div>
+                                  
+                                  <div style={{
+                                    fontSize: '0.8rem',
+                                    color: isEligible ? '#28a745' : '#dc3545',
+                                    fontWeight: '500'
+                                  }}>
+                                    {isEligible ? 
+                                      `✓ Customer qualifies for ${card.type} card` : 
+                                      `✗ Customer does not qualify for ${card.type} card`
+                                    }
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
       </div>
 
