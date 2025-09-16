@@ -15,6 +15,10 @@ import ApplicationScoreModule, { type ApplicationScoreInput, type ApplicationSco
 import BehavioralScoreModule, { type BehavioralScoreInput, type BehavioralScoreResult } from './modules/BehavioralScoreModule';
 import SystemChecksModule, { type SystemChecksInput, type SystemChecksResult } from './modules/SystemChecksModule';
 import CreditLimitModule, { type CreditLimitInput, type CreditLimitResult } from './modules/CreditLimitModule';
+import IncomeVerificationModule, { type IncomeVerificationInput, type IncomeVerificationResult } from './modules/IncomeVerificationModule';
+import VerificationFrameworkModule, { type VerificationFrameworkInput, type VerificationFrameworkResult } from './modules/VerificationFrameworkModule';
+import SpecialSegmentsModule, { type SpecialSegmentsInput, type SpecialSegmentsResult } from './modules/SpecialSegmentsModule';
+import DocumentationComplianceModule, { type DocumentationComplianceInput, type DocumentationComplianceResult } from './modules/DocumentationComplianceModule';
 
 // Type definitions
 interface ApplicationData {
@@ -74,6 +78,10 @@ interface DecisionResult {
     behavioralScore: { score: number; details: BehavioralScoreResult };
     systemChecks: { score: number; details: SystemChecksResult };
     creditLimit: { score: number; details: CreditLimitResult };
+    incomeVerification: { score: number; details: IncomeVerificationResult };
+    verificationFramework: { score: number; details: VerificationFrameworkResult };
+    specialSegments: { score: number; details: SpecialSegmentsResult };
+    documentationCompliance: { score: number; details: DocumentationComplianceResult };
   };
 }
 
@@ -89,6 +97,10 @@ export default class CreditCardDecisionEngine {
   private behavioralScoreModule: BehavioralScoreModule;
   private systemChecksModule: SystemChecksModule;
   private creditLimitModule: CreditLimitModule;
+  private incomeVerificationModule: IncomeVerificationModule;
+  private verificationFrameworkModule: VerificationFrameworkModule;
+  private specialSegmentsModule: SpecialSegmentsModule;
+  private documentationComplianceModule: DocumentationComplianceModule;
 
   constructor() {
     // Initialize all microservice modules
@@ -102,6 +114,10 @@ export default class CreditCardDecisionEngine {
     this.behavioralScoreModule = new BehavioralScoreModule();
     this.systemChecksModule = new SystemChecksModule();
     this.creditLimitModule = new CreditLimitModule();
+    this.incomeVerificationModule = new IncomeVerificationModule();
+    this.verificationFrameworkModule = new VerificationFrameworkModule();
+    this.specialSegmentsModule = new SpecialSegmentsModule();
+    this.documentationComplianceModule = new DocumentationComplianceModule();
     
     console.log('🏗️ Credit Card Decision Engine initialized with microservice modules:');
     console.log(`  • ${this.spuModule.getModuleInfo().name} (Team: ${this.spuModule.getModuleInfo().team})`);
@@ -112,6 +128,12 @@ export default class CreditCardDecisionEngine {
     console.log(`  • ${this.dbrModule.getModuleInfo().name} (Team: ${this.dbrModule.getModuleInfo().team})`);
     console.log(`  • ${this.applicationScoreModule.getModuleInfo().name} (Team: ${this.applicationScoreModule.getModuleInfo().team})`);
     console.log(`  • ${this.behavioralScoreModule.getModuleInfo().name} (Team: ${this.behavioralScoreModule.getModuleInfo().team})`);
+    console.log(`  • ${this.systemChecksModule.getModuleInfo().name} (Team: ${this.systemChecksModule.getModuleInfo().team})`);
+    console.log(`  • ${this.creditLimitModule.getModuleInfo().name} (Team: ${this.creditLimitModule.getModuleInfo().team})`);
+    console.log(`  • ${this.incomeVerificationModule.getModuleInfo().name} (Team: ${this.incomeVerificationModule.getModuleInfo().team})`);
+    console.log(`  • ${this.verificationFrameworkModule.getModuleInfo().name} (Team: ${this.verificationFrameworkModule.getModuleInfo().team})`);
+    console.log(`  • ${this.specialSegmentsModule.getModuleInfo().name} (Team: ${this.specialSegmentsModule.getModuleInfo().team})`);
+    console.log(`  • ${this.documentationComplianceModule.getModuleInfo().name} (Team: ${this.documentationComplianceModule.getModuleInfo().team})`);
   }
 
   /**
@@ -304,10 +326,10 @@ export default class CreditCardDecisionEngine {
       proposed_loan_amount: app.proposed_loan_amount || app.amount_requested || app.amountRequested,
       dbrPercentage: dbrResult.dbrPercentage,
       dbrScore: dbrResult.score,
-      is_ubl_customer: app.is_ubl_customer || false,
-      customerType: app.is_ubl_customer ? 'ETB' : 'NTB',
+      is_ubl_customer: Boolean(app.is_ubl_customer),
+      customerType: Boolean(app.is_ubl_customer) ? 'ETB' : 'NTB',
       employment_type: app.employment_type || '',
-      salary_transfer_flag: app.salary_transfer_flag || false,
+      salary_transfer_flag: Boolean(app.salary_transfer_flag),
       total_exposure: creditLimitData?.total_exposure,
       unsecured_exposure: creditLimitData?.unsecured_exposure,
       credit_card_exposure: creditLimitData?.credit_card_exposure,
@@ -320,6 +342,160 @@ export default class CreditCardDecisionEngine {
       bank_statement_verified: creditLimitData?.bank_statement_verified
     };
     return this.creditLimitModule.calculate(input);
+  }
+
+  /**
+   * Income Verification Module - Employment Types A/B/C
+   */
+  public incomeVerification(app: ApplicationData): IncomeVerificationResult {
+    const input: IncomeVerificationInput = {
+      cnic: app.cnic || '',
+      full_name: app.full_name || app.customerName || '',
+      date_of_birth: app.date_of_birth || '',
+      gross_monthly_income: app.gross_monthly_income || app.grossMonthlySalary || 0,
+      net_monthly_income: app.net_monthly_income || app.netMonthlyIncome || 0,
+      total_income: app.total_income || 0,
+      employment_type: app.employment_type || '',
+      employment_status: app.employment_status || '',
+      length_of_employment: app.length_of_employment || 0,
+      business_nature: (app as any).business_nature || '',
+      is_ubl_customer: Boolean(app.is_ubl_customer),
+      customerType: Boolean(app.is_ubl_customer) ? 'ETB' : 'NTB',
+      salary_transfer_flag: Boolean(app.salary_transfer_flag),
+      income_verified: (app as any).income_verified || false,
+      bank_statement_verified: (app as any).bank_statement_verified || false,
+      office_verification_done: (app as any).office_verification_done || false,
+      residence_verification_done: (app as any).residence_verification_done || false,
+      company_type: (app as any).company_type || 'UNKNOWN',
+      salary_slip_provided: (app as any).salary_slip_provided || false,
+      bank_statement_provided: (app as any).bank_statement_provided || false,
+      employment_certificate_provided: (app as any).employment_certificate_provided || false,
+      hr_letter_provided: (app as any).hr_letter_provided || false,
+      is_pensioner: (app as any).is_pensioner || false,
+      is_remittance_customer: (app as any).is_remittance_customer || false,
+      is_cross_sell: (app as any).is_cross_sell || false,
+      is_mvc: (app as any).is_mvc || false
+    };
+    return this.incomeVerificationModule.calculate(input);
+  }
+
+  /**
+   * Verification Framework Module - Telephonic, Office/Residence, Waivers
+   */
+  public verificationFramework(app: ApplicationData): VerificationFrameworkResult {
+    const input: VerificationFrameworkInput = {
+      cnic: app.cnic || '',
+      full_name: app.full_name || app.customerName || '',
+      date_of_birth: app.date_of_birth || '',
+      curr_city: app.curr_city || '',
+      office_city: app.office_city || '',
+      is_ubl_customer: Boolean(app.is_ubl_customer),
+      customerType: Boolean(app.is_ubl_customer) ? 'ETB' : 'NTB',
+      employment_type: app.employment_type || '',
+      employment_status: app.employment_status || '',
+      company_type: (app as any).company_type || 'UNKNOWN',
+      office_verification_done: (app as any).office_verification_done || false,
+      residence_verification_done: (app as any).residence_verification_done || false,
+      telephonic_verification_done: (app as any).telephonic_verification_done || false,
+      clean_eCIB_12m: (app as any).clean_eCIB_12m || false,
+      never_30_dpd: (app as any).never_30_dpd || false,
+      address_match: (app as any).address_match || false,
+      utility_bill_provided: (app as any).utility_bill_provided || false,
+      utility_bill_type: (app as any).utility_bill_type || 'NONE',
+      salary_in_statement: (app as any).salary_in_statement || false,
+      limit_under_500k: (app as any).limit_under_500k || false,
+      is_high_risk_city: (app as any).is_high_risk_city || false,
+      is_restricted_entity: (app as any).is_restricted_entity || false,
+      is_preferred_mailing_address: (app as any).is_preferred_mailing_address || false,
+      is_tax_return_doc: (app as any).is_tax_return_doc || false,
+      references_provided: (app as any).references_provided || 0,
+      positive_references: (app as any).positive_references || 0,
+      negative_references: (app as any).negative_references || 0,
+      no_response_references: (app as any).no_response_references || 0
+    };
+    return this.verificationFrameworkModule.calculate(input);
+  }
+
+  /**
+   * Special Segments Module - Cross-sell, Pensioner, Remittance, MVC
+   */
+  public specialSegments(app: ApplicationData): SpecialSegmentsResult {
+    const input: SpecialSegmentsInput = {
+      cnic: app.cnic || '',
+      full_name: app.full_name || app.customerName || '',
+      date_of_birth: app.date_of_birth || '',
+      is_ubl_customer: Boolean(app.is_ubl_customer),
+      customerType: Boolean(app.is_ubl_customer) ? 'ETB' : 'NTB',
+      net_monthly_income: app.net_monthly_income || app.netMonthlyIncome || 0,
+      gross_monthly_income: app.gross_monthly_income || app.grossMonthlySalary || 0,
+      is_pensioner: (app as any).is_pensioner || false,
+      is_remittance_customer: (app as any).is_remittance_customer || false,
+      is_cross_sell: (app as any).is_cross_sell || false,
+      is_mvc: (app as any).is_mvc || false,
+      has_auto_loan: (app as any).has_auto_loan || false,
+      has_mortgage_loan: (app as any).has_mortgage_loan || false,
+      loan_disbursement_date: (app as any).loan_disbursement_date || '',
+      vehicle_tracker_status: (app as any).vehicle_tracker_status || 'NONE',
+      late_payments_count: (app as any).late_payments_count || 0,
+      fresh_ecib_required: (app as any).fresh_ecib_required || false,
+      address_changed: (app as any).address_changed || false,
+      is_deviation_account: (app as any).is_deviation_account || false,
+      is_islamic_poa: (app as any).is_islamic_poa || false,
+      asset_in_use: (app as any).asset_in_use || false,
+      pension_income: (app as any).pension_income || 0,
+      pension_credits_count: (app as any).pension_credits_count || 0,
+      credit_shield_insurance: (app as any).credit_shield_insurance || false,
+      pension_book_provided: (app as any).pension_book_provided || false,
+      remittance_source: (app as any).remittance_source || 'OTHER',
+      blood_relative_proof: (app as any).blood_relative_proof || false,
+      remittance_amount_12m: (app as any).remittance_amount_12m || 0,
+      remittance_entries_count: (app as any).remittance_entries_count || 0,
+      last_remittance_date: (app as any).last_remittance_date || '',
+      relationship_proof_provided: (app as any).relationship_proof_provided || false,
+      business_duration_months: (app as any).business_duration_months || 0,
+      average_balance: (app as any).average_balance || 0,
+      credits_last_6m: (app as any).credits_last_6m || 0,
+      kyc_mismatch: (app as any).kyc_mismatch || false,
+      branch_manager_endorsement: (app as any).branch_manager_endorsement || false
+    };
+    return this.specialSegmentsModule.calculate(input);
+  }
+
+  /**
+   * Documentation & Compliance Module - NADRA BVS, CNIC validation
+   */
+  public documentationCompliance(app: ApplicationData): DocumentationComplianceResult {
+    const input: DocumentationComplianceInput = {
+      cnic: app.cnic || '',
+      full_name: app.full_name || app.customerName || '',
+      date_of_birth: app.date_of_birth || '',
+      place_of_birth: (app as any).place_of_birth || '',
+      permanent_address: (app as any).permanent_address || '',
+      current_address: (app as any).current_address || '',
+      cnic_expiry_date: (app as any).cnic_expiry_date || '',
+      cnic_issue_date: (app as any).cnic_issue_date || '',
+      cnic_valid: (app as any).cnic_valid || false,
+      bvs_performed: (app as any).bvs_performed || false,
+      bvs_successful: (app as any).bvs_successful || false,
+      bvs_not_possible_reason: (app as any).bvs_not_possible_reason || 'NONE',
+      bvs_deferral_date: (app as any).bvs_deferral_date || '',
+      bvs_deferral_reason: (app as any).bvs_deferral_reason || '',
+      verisys_performed: (app as any).verisys_performed || false,
+      verisys_approved: (app as any).verisys_approved || false,
+      verisys_authority: (app as any).verisys_authority || 'NONE',
+      cnic_copy_provided: (app as any).cnic_copy_provided || false,
+      cnic_copies_count: (app as any).cnic_copies_count || 0,
+      address_verification_done: (app as any).address_verification_done || false,
+      signature_verification_done: (app as any).signature_verification_done || false,
+      is_new_applicant: (app as any).is_new_applicant || true,
+      is_active_customer: (app as any).is_active_customer || false,
+      cnic_expiry_notice_sent: (app as any).cnic_expiry_notice_sent || false,
+      cnic_update_within_30_days: (app as any).cnic_update_within_30_days || false,
+      afd_clearance_required: (app as any).afd_clearance_required || false,
+      afd_clearance_obtained: (app as any).afd_clearance_obtained || false,
+      afd_mismatch_details: (app as any).afd_mismatch_details || ''
+    };
+    return this.documentationComplianceModule.calculate(input);
   }
 
   /**
@@ -344,6 +520,12 @@ export default class CreditCardDecisionEngine {
     // Calculate System Checks and Credit Limit
     const systemChecksResult = this.systemChecks(applicationData, systemChecksData);
     const creditLimitResult = this.creditLimit(applicationData, dbrResult, creditLimitData);
+    
+    // Calculate new framework modules
+    const incomeVerificationResult = this.incomeVerification(applicationData);
+    const verificationFrameworkResult = this.verificationFramework(applicationData);
+    const specialSegmentsResult = this.specialSegments(applicationData);
+    const documentationComplianceResult = this.documentationCompliance(applicationData);
 
     // Determine customer type for weight calculation
     const isETB = applicationData.is_ubl_customer === true || applicationData.is_ubl_customer === "true";
@@ -351,19 +533,19 @@ export default class CreditCardDecisionEngine {
     // Check for critical failures (hard stops) first
     if (this.ageModule.isCriticalFailure(ageResult)) {
       return this.buildFailureResult(applicationData, 'Age validation failed', ageResult.notes[0] || 'Age validation failed', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
       });
     }
 
     if (this.spuModule.isCriticalFailure(spuResult)) {
       return this.buildFailureResult(applicationData, 'SPU Critical Hit - Automatic Fail', 'SPU Critical Hit - Automatic Fail', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
       });
     }
 
     if (this.cityModule.isCriticalFailure(cityResult)) {
       return this.buildFailureResult(applicationData, 'Annexure A Area - Automatic Fail', 'Annexure A Area - Automatic Fail', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
       });
     }
 
@@ -460,7 +642,11 @@ export default class CreditCardDecisionEngine {
         applicationScore: { score: applicationScoreResult.score, details: applicationScoreResult },
         behavioralScore: { score: behavioralScoreResult.score, details: behavioralScoreResult },
         systemChecks: { score: systemChecksResult.score, details: systemChecksResult },
-        creditLimit: { score: creditLimitResult.score, details: creditLimitResult }
+        creditLimit: { score: creditLimitResult.score, details: creditLimitResult },
+        incomeVerification: { score: incomeVerificationResult.score, details: incomeVerificationResult },
+        verificationFramework: { score: verificationFrameworkResult.score, details: verificationFrameworkResult },
+        specialSegments: { score: specialSegmentsResult.score, details: specialSegmentsResult },
+        documentationCompliance: { score: documentationComplianceResult.score, details: documentationComplianceResult }
       }
     };
   }
@@ -482,6 +668,8 @@ export default class CreditCardDecisionEngine {
       dbr: DBRResult;
       applicationScore: ApplicationScoreResult;
       behavioralScore: BehavioralScoreResult;
+      systemChecks?: SystemChecksResult;
+      creditLimit?: CreditLimitResult;
     }
   ): DecisionResult {
     return {
@@ -503,7 +691,11 @@ export default class CreditCardDecisionEngine {
         applicationScore: { score: moduleResults.applicationScore.score, details: moduleResults.applicationScore },
         behavioralScore: { score: moduleResults.behavioralScore.score, details: moduleResults.behavioralScore },
         systemChecks: { score: (moduleResults as any).systemChecks?.score || 0, details: (moduleResults as any).systemChecks || {} },
-        creditLimit: { score: (moduleResults as any).creditLimit?.score || 0, details: (moduleResults as any).creditLimit || {} }
+        creditLimit: { score: (moduleResults as any).creditLimit?.score || 0, details: (moduleResults as any).creditLimit || {} },
+        incomeVerification: { score: 0, details: {} as IncomeVerificationResult },
+        verificationFramework: { score: 0, details: {} as VerificationFrameworkResult },
+        specialSegments: { score: 0, details: {} as SpecialSegmentsResult },
+        documentationCompliance: { score: 0, details: {} as DocumentationComplianceResult }
       }
     };
   }

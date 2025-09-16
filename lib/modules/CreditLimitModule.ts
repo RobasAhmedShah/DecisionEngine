@@ -314,10 +314,10 @@ export default class CreditLimitModule {
   private isCardTypeEligible(input: CreditLimitInput, limit: number): boolean {
     // Platinum cards only for new acquisitions or special segments
     if (limit >= this.CARD_TYPE_RANGES.PLATINUM.min) {
-      return input.customerType === 'NTB' || 
-             input.is_cross_sell || 
-             input.is_mvc || 
-             input.is_remittance_customer;
+      return (input.customerType === 'NTB') || 
+             (input.is_cross_sell || false) || 
+             (input.is_mvc || false) || 
+             (input.is_remittance_customer || false);
     }
     return true;
   }
@@ -350,5 +350,16 @@ export default class CreditLimitModule {
     const adjustedScore = baseScore + (limitRatio * 20);
     
     return Math.round(Math.min(adjustedScore, 100));
+  }
+
+  /**
+   * Get module information
+   */
+  public getModuleInfo() {
+    return {
+      name: 'Credit Limit Module',
+      team: 'Credit Risk & Product Management',
+      responsibility: 'Credit limit assignment, card type determination, SBP compliance'
+    };
   }
 }

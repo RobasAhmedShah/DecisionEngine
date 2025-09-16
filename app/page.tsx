@@ -492,6 +492,39 @@ export default function CreditCardDecisionEngine() {
         - Decision: ${decision.moduleScores?.creditLimit?.details?.decision || 'UNKNOWN'}
         - Reason: ${decision.moduleScores?.creditLimit?.details?.reason || 'N/A'}
       
+      Income Verification: ${decision.moduleScores?.incomeVerification?.score || 0}/100
+        - Employment Type: ${decision.moduleScores?.incomeVerification?.details?.employmentType || 'N/A'}
+        - Decision: ${decision.moduleScores?.incomeVerification?.details?.decision || 'UNKNOWN'}
+        - Verification Level: ${decision.moduleScores?.incomeVerification?.details?.verificationLevel || 'N/A'}
+        - Income Threshold Met: ${decision.moduleScores?.incomeVerification?.details?.incomeThreshold?.met ? 'YES' : 'NO'}
+        - Expected: PKR ${decision.moduleScores?.incomeVerification?.details?.incomeThreshold?.expected?.toLocaleString() || 0}
+        - Actual: PKR ${decision.moduleScores?.incomeVerification?.details?.incomeThreshold?.actual?.toLocaleString() || 0}
+      
+      Verification Framework: ${decision.moduleScores?.verificationFramework?.score || 0}/100
+        - Decision: ${decision.moduleScores?.verificationFramework?.details?.decision || 'UNKNOWN'}
+        - Verification Level: ${decision.moduleScores?.verificationFramework?.details?.verificationLevel || 'N/A'}
+        - Office Verification: ${decision.moduleScores?.verificationFramework?.details?.requirements?.office || 'UNKNOWN'}
+        - Residence Verification: ${decision.moduleScores?.verificationFramework?.details?.requirements?.residence || 'UNKNOWN'}
+        - Telephonic Verification: ${decision.moduleScores?.verificationFramework?.details?.requirements?.telephonic || 'UNKNOWN'}
+        - References: ${decision.moduleScores?.verificationFramework?.details?.requirements?.references || 'UNKNOWN'}
+      
+      Special Segments: ${decision.moduleScores?.specialSegments?.score || 0}/100
+        - Segment Type: ${decision.moduleScores?.specialSegments?.details?.segmentType || 'STANDARD'}
+        - Decision: ${decision.moduleScores?.specialSegments?.details?.decision || 'UNKNOWN'}
+        - Cross-sell Eligible: ${decision.moduleScores?.specialSegments?.details?.eligibility?.crossSell ? 'YES' : 'NO'}
+        - Pensioner Eligible: ${decision.moduleScores?.specialSegments?.details?.eligibility?.pensioner ? 'YES' : 'NO'}
+        - Remittance Eligible: ${decision.moduleScores?.specialSegments?.details?.eligibility?.remittance ? 'YES' : 'NO'}
+        - MVC Eligible: ${decision.moduleScores?.specialSegments?.details?.eligibility?.mvc ? 'YES' : 'NO'}
+      
+      Documentation & Compliance: ${decision.moduleScores?.documentationCompliance?.score || 0}/100
+        - Decision: ${decision.moduleScores?.documentationCompliance?.details?.decision || 'UNKNOWN'}
+        - Compliance Status: ${decision.moduleScores?.documentationCompliance?.details?.complianceStatus || 'UNKNOWN'}
+        - CNIC Valid: ${decision.moduleScores?.documentationCompliance?.details?.cnicValidation?.valid ? 'YES' : 'NO'}
+        - BVS Required: ${decision.moduleScores?.documentationCompliance?.details?.bvsStatus?.required ? 'YES' : 'NO'}
+        - BVS Successful: ${decision.moduleScores?.documentationCompliance?.details?.bvsStatus?.successful ? 'YES' : 'NO'}
+        - Verisys Required: ${decision.moduleScores?.documentationCompliance?.details?.verisysStatus?.required ? 'YES' : 'NO'}
+        - Verisys Approved: ${decision.moduleScores?.documentationCompliance?.details?.verisysStatus?.approved ? 'YES' : 'NO'}
+      
       Total: ${decision.finalScore || 0}/100
     `;
     setWeightedCalculations(weightedCalc);

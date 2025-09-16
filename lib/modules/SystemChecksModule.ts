@@ -484,4 +484,15 @@ export default class SystemChecksModule {
       notes
     };
   }
+
+  /**
+   * Get module information
+   */
+  public getModuleInfo() {
+    return {
+      name: 'System Checks Module',
+      team: 'Security & Compliance',
+      responsibility: 'eCIB, VERISYS, AFD, PEP, World Check validation'
+    };
+  }
 }
