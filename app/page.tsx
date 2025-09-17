@@ -12,8 +12,10 @@ interface ApplicationData {
   age?: number;
   gender?: string;
   maritalStatus?: string;
+  educationQualification?: string;
   mobile?: string;
   employmentStatus?: string;
+  employmentType?: string;
   occupation?: string;
   companyName?: string;
   designation?: string;
@@ -23,6 +25,7 @@ interface ApplicationData {
   amountRequested?: number;
   tenure?: number;
   ublCustomer?: string;
+  salaryTransferFlag?: string;
   currentCity?: string;
   currentAddress?: string;
   officeCity?: string;
@@ -879,646 +882,7 @@ export default function CreditCardDecisionEngine() {
             )}
           </div>
 
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: '30px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-              marginBottom: '20px'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                margin: '0 0 10px 0',
-                color: '#2d3748',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}>
-                🎯 Manual Inputs
-              </h2>
-              <p style={{ 
-                fontSize: '0.9rem', 
-                color: '#718096', 
-                marginBottom: '25px',
-                lineHeight: '1.5'
-              }}>
-              Enter income values manually if not available from API data
-            </p>
-            
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '20px'
-              }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Cluster:
-                  </label>
-                <select 
-                  value={cluster} 
-                  onChange={(e) => setCluster(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      backgroundColor: 'white',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      transition: 'border-color 0.2s'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                >
-                  <option value="">Select Cluster</option>
-                  <option value="FEDERAL">FEDERAL (30 points)</option>
-                  <option value="SOUTH">SOUTH (25 points)</option>
-                  <option value="NORTHERN_PUNJAB">NORTHERN_PUNJAB (20 points)</option>
-                  <option value="NORTH">NORTH (15 points)</option>
-                  <option value="SOUTHERN_PUNJAB">SOUTHERN_PUNJAB (10 points)</option>
-                  <option value="KP">KP (5 points)</option>
-                </select>
-              </div>
-              
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Employment Type:
-                  </label>
-                <select 
-                  value={employmentType} 
-                  onChange={(e) => setEmploymentType(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      backgroundColor: 'white',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      transition: 'border-color 0.2s'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                >
-                  <option value="permanent">Permanent</option>
-                  <option value="contractual">Contractual</option>
-                  <option value="self-employed">Self-Employed</option>
-                  <option value="business">Business</option>
-                  <option value="probation">Probation</option>
-                </select>
-              </div>
-              
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Salary Transfer:
-                  </label>
-                <select 
-                  value={salaryTransferFlag} 
-                  onChange={(e) => setSalaryTransferFlag(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      backgroundColor: 'white',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      transition: 'border-color 0.2s'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                >
-                  <option value="salary_transfer">Salary Transfer</option>
-                  <option value="non_salary_transfer">Non-Salary Transfer</option>
-                </select>
-                </div>
-              </div>
-              </div>
-              
-            {/* CBS Data Input Section */}
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: '30px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-              marginBottom: '20px'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                margin: '0 0 10px 0',
-                color: '#2d3748',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}>
-                🏦 CBS Data Input
-              </h2>
-              <p style={{ 
-                fontSize: '0.9rem', 
-                color: '#718096', 
-                marginBottom: '25px',
-                lineHeight: '1.5'
-              }}>
-                Enter CBS/ECIB data manually for behavioral scoring
-              </p>
-              
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '20px'
-              }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Average Deposit Balance:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsDepositBalance} 
-                    onChange={(e) => setCbsDepositBalance(e.target.value)}
-                    placeholder="500000"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Highest DPD:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsHighestDPD} 
-                    onChange={(e) => setCbsHighestDPD(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Industry Exposure:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsIndustryExposure} 
-                    onChange={(e) => setCbsIndustryExposure(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Bad Counts Industry:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsBadCountsIndustry} 
-                    onChange={(e) => setCbsBadCountsIndustry(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Bad Counts UBL:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsBadCountsUBL} 
-                    onChange={(e) => setCbsBadCountsUBL(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    DPD 30+:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsDPD30Plus} 
-                    onChange={(e) => setCbsDPD30Plus(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    DPD 60+:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsDPD60Plus} 
-                    onChange={(e) => setCbsDPD60Plus(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Defaults 12M:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsDefaults12M} 
-                    onChange={(e) => setCbsDefaults12M(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Late Payments:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsLatePayments} 
-                    onChange={(e) => setCbsLatePayments(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Partial Payments:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsPartialPayments} 
-                    onChange={(e) => setCbsPartialPayments(e.target.value)}
-                    placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    color: '#4a5568',
-                    marginBottom: '8px'
-                  }}>
-                    Credit Utilization Ratio:
-                  </label>
-                  <input 
-                    type="number" 
-                    value={cbsCreditUtilization} 
-                    onChange={(e) => setCbsCreditUtilization(e.target.value)}
-                    placeholder="0.3"
-                    step="0.1"
-                    min="0"
-                    max="1"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                      transition: 'border-color 0.2s',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
-                </div>
-            </div>
-          </div>
-
-          {/* Show API Data after fetching */}
-          {showApplicationData && (
-            <div className="section" id="applicationDataSection">
-              <h2 
-                className={`section-title collapsible ${expandedSections.applicationData ? 'active' : ''}`} 
-                onClick={() => toggleSection('applicationData')}
-              >
-                📄 API Fetched Data <small>(Click to expand/collapse)</small>
-              </h2>
-              
-              <div className={`collapsible-content ${expandedSections.applicationData ? 'expanded' : ''}`}>
-                <div className="data-grid">
-                  <div className="data-card">
-                    <h3>Basic Info</h3>
-                    <div className="data-row">
-                      <span className="data-label">Application ID:</span>
-                      <span className="data-value">{applicationData?.applicationId || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Customer Name:</span>
-                      <span className="data-value">{applicationData?.customerName || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">CNIC:</span>
-                      <span className="data-value">{applicationData?.cnic || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Date of Birth:</span>
-                      <span className="data-value">{applicationData?.dateOfBirth || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Age:</span>
-                      <span className="data-value">{applicationData?.age || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Gender:</span>
-                      <span className="data-value">{applicationData?.gender || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Marital Status:</span>
-                      <span className="data-value">{applicationData?.maritalStatus || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Mobile:</span>
-                      <span className="data-value">{applicationData?.mobile || '-'}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="data-card">
-                    <h3>Employment & Income</h3>
-                    <div className="data-row">
-                      <span className="data-label">Employment Status:</span>
-                      <span className="data-value">{applicationData?.employmentStatus || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Occupation:</span>
-                      <span className="data-value">{applicationData?.occupation || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Company Name:</span>
-                      <span className="data-value">{applicationData?.companyName || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Designation:</span>
-                      <span className="data-value">{applicationData?.designation || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Experience (Years):</span>
-                      <span className="data-value">{applicationData?.experience || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Gross Monthly Salary:</span>
-                      <span className="data-value">PKR {applicationData?.grossMonthlySalary?.toLocaleString() || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Net Monthly Income:</span>
-                      <span className="data-value">PKR {applicationData?.netMonthlyIncome?.toLocaleString() || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Amount Requested:</span>
-                      <span className="data-value">PKR {applicationData?.amountRequested?.toLocaleString() || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Tenure (Months):</span>
-                      <span className="data-value">{applicationData?.tenure || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">UBL Customer:</span>
-                      <span className="data-value">{applicationData?.ublCustomer || '-'}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="data-card">
-                    <h3>Address & Location</h3>
-                    <div className="data-row">
-                      <span className="data-label">Current City:</span>
-                      <span className="data-value">{applicationData?.currentCity || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Current Address:</span>
-                      <span className="data-value">{applicationData?.currentAddress || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Office City:</span>
-                      <span className="data-value">{applicationData?.officeCity || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Office Address:</span>
-                      <span className="data-value">{applicationData?.officeAddress || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Cluster:</span>
-                      <span className="data-value">{applicationData?.cluster || '-'}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="data-card">
-                    <h3>Verification & Checks</h3>
-                    <div className="data-row">
-                      <span className="data-label">EAMVU Status:</span>
-                      <span className="data-value">{applicationData?.eamvuStatus || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">SPU Black List:</span>
-                      <span className="data-value">{applicationData?.spuBlackList || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">SPU Credit Card:</span>
-                      <span className="data-value">{applicationData?.spuCreditCard || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">SPU Negative List:</span>
-                      <span className="data-value">{applicationData?.spuNegativeList || '-'}</span>
-                    </div>
-                    <div className="data-row">
-                      <span className="data-label">Existing Debt:</span>
-                      <span className="data-value">PKR {applicationData?.existingDebt?.toLocaleString() || '-'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
+            {/* Action Buttons */}
             <div className="section">
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
               {/* Test Case Dropdown */}
@@ -1682,13 +1046,279 @@ export default function CreditCardDecisionEngine() {
               </button>
                 </div>
               </div>
+   {/* Show API Data after fetching */}
+   {showApplicationData && (
+            <div className="section" id="applicationDataSection">
+              <h2 
+                className={`section-title collapsible ${expandedSections.applicationData ? 'active' : ''}`} 
+                onClick={() => toggleSection('applicationData')}
+              >
+                📄 API Fetched Data <small>(Click to expand/collapse)</small>
+              </h2>
+              
+              <div className={`collapsible-content ${expandedSections.applicationData ? 'expanded' : ''}`}>
+                <div style={{
+                  maxHeight: '600px',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  backgroundColor: '#f8f9fa',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                  position: 'relative'
+                }}>
+                  <div className="data-grid" style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                    gap: '20px',
+                    padding: '20px'
+                  }}>
+                    
+                    {/* Basic Information */}
+                    <div className="data-card">
+                      <h3>🆔 Basic Information</h3>
+                      <div className="data-row">
+                        <span className="data-label">Application ID:</span>
+                        <span className="data-value">{applicationData?.applicationId || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Full Name:</span>
+                        <span className="data-value">{applicationData?.customerName || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">CNIC:</span>
+                        <span className="data-value">{applicationData?.cnic || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Date of Birth:</span>
+                        <span className="data-value">{applicationData?.dateOfBirth || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Age:</span>
+                        <span className="data-value">{applicationData?.age || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Gender:</span>
+                        <span className="data-value">{applicationData?.gender || 'Male'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Marital Status:</span>
+                        <span className="data-value">{applicationData?.maritalStatus || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Education:</span>
+                        <span className="data-value">{applicationData?.educationQualification || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Mobile:</span>
+                        <span className="data-value">{applicationData?.mobile || 'N/A'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Employment & Income */}
+                    <div className="data-card">
+                      <h3>💼 Employment & Income</h3>
+                      <div className="data-row">
+                        <span className="data-label">Employment Status:</span>
+                        <span className="data-value">{applicationData?.employmentStatus || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Employment Type:</span>
+                        <span className="data-value">{applicationData?.employmentType || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Length of Employment:</span>
+                        <span className="data-value">{applicationData?.experience || '-'} years</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Occupation:</span>
+                        <span className="data-value">{applicationData?.occupation || 'Professional'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Company Name:</span>
+                        <span className="data-value">{applicationData?.companyName || 'N/A'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Designation:</span>
+                        <span className="data-value">{applicationData?.designation || 'N/A'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Gross Monthly Income:</span>
+                        <span className="data-value">PKR {applicationData?.grossMonthlySalary?.toLocaleString() || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Net Monthly Income:</span>
+                        <span className="data-value">PKR {applicationData?.netMonthlyIncome?.toLocaleString() || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Salary Transfer:</span>
+                        <span className="data-value" style={{ color: applicationData?.salaryTransferFlag === 'Yes' ? '#28a745' : '#6c757d' }}>
+                          {applicationData?.salaryTransferFlag || 'No'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Location & Geography */}
+                    <div className="data-card">
+                      <h3>📍 Location & Geography</h3>
+                      <div className="data-row">
+                        <span className="data-label">Current City:</span>
+                        <span className="data-value">{applicationData?.currentCity || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Office City:</span>
+                        <span className="data-value">{applicationData?.officeCity || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Cluster:</span>
+                        <span className="data-value">{applicationData?.cluster || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Current Address:</span>
+                        <span className="data-value">{applicationData?.currentAddress || 'N/A'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Office Address:</span>
+                        <span className="data-value">{applicationData?.officeAddress || 'N/A'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Application Details */}
+                    <div className="data-card">
+                      <h3>💳 Application Details</h3>
+                      <div className="data-row">
+                        <span className="data-label">Amount Requested:</span>
+                        <span className="data-value">PKR {applicationData?.amountRequested?.toLocaleString() || '-'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Loan Type:</span>
+                        <span className="data-value">{applicationData?.loan_type || 'Credit Card'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Tenure (Months):</span>
+                        <span className="data-value">{applicationData?.tenure || 'N/A'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">UBL Customer:</span>
+                        <span className="data-value" style={{ color: applicationData?.ublCustomer === 'Yes' ? '#28a745' : '#6c757d' }}>
+                          {applicationData?.ublCustomer || 'No'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Existing Debt:</span>
+                        <span className="data-value">PKR {applicationData?.existingDebt?.toLocaleString() || '0'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Verification & Compliance */}
+                    <div className="data-card">
+                      <h3>⚠️ Verification & Compliance</h3>
+                      <div className="data-row">
+                        <span className="data-label">EAMVU Submitted:</span>
+                        <span className="data-value" style={{ color: applicationData?.eavmu_submitted ? '#28a745' : '#dc3545' }}>
+                          {applicationData?.eavmu_submitted ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">SPU Black List:</span>
+                        <span className="data-value" style={{ color: applicationData?.spuBlackList === 'Yes' ? '#dc3545' : '#28a745' }}>
+                          {applicationData?.spuBlackList === 'Yes' ? 'HIT' : 'CLEAR'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">SPU Credit Card:</span>
+                        <span className="data-value" style={{ color: applicationData?.spuCreditCard === 'Yes' ? '#dc3545' : '#28a745' }}>
+                          {applicationData?.spuCreditCard === 'Yes' ? 'HIT' : 'CLEAR'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">SPU Negative List:</span>
+                        <span className="data-value" style={{ color: applicationData?.spuNegativeList === 'Yes' ? '#dc3545' : '#28a745' }}>
+                          {applicationData?.spuNegativeList === 'Yes' ? 'HIT' : 'CLEAR'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* CBS Banking Data */}
+                    <div className="data-card">
+                      <h3>🏦 CBS Banking Data</h3>
+                      <div className="data-row">
+                        <span className="data-label">Average Deposit Balance:</span>
+                        <span className="data-value">PKR {(dbrData?.average_deposit_balance || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Highest DPD:</span>
+                        <span className="data-value" style={{ color: (dbrData?.highest_dpd || 0) > 0 ? '#dc3545' : '#28a745' }}>
+                          {dbrData?.highest_dpd || '0'} days
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">DPD 30+ Count:</span>
+                        <span className="data-value" style={{ color: (dbrData?.dpd_30_plus || 0) > 0 ? '#dc3545' : '#28a745' }}>
+                          {dbrData?.dpd_30_plus || '0'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">DPD 60+ Count:</span>
+                        <span className="data-value" style={{ color: (dbrData?.dpd_60_plus || 0) > 0 ? '#dc3545' : '#28a745' }}>
+                          {dbrData?.dpd_60_plus || '0'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Defaults (12M):</span>
+                        <span className="data-value" style={{ color: (dbrData?.defaults_12m || 0) > 0 ? '#dc3545' : '#28a745' }}>
+                          {dbrData?.defaults_12m || '0'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Late Payments:</span>
+                        <span className="data-value" style={{ color: (dbrData?.late_payments || 0) > 0 ? '#dc3545' : '#28a745' }}>
+                          {dbrData?.late_payments || '0'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Partial Payments:</span>
+                        <span className="data-value" style={{ color: (dbrData?.partial_payments || 0) > 0 ? '#dc3545' : '#28a745' }}>
+                          {dbrData?.partial_payments || '0'}
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Credit Utilization:</span>
+                        <span className="data-value" style={{ color: (dbrData?.credit_utilization_ratio || 0) > 0.8 ? '#dc3545' : '#28a745' }}>
+                          {((dbrData?.credit_utilization_ratio || 0) * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Bad Counts (Industry):</span>
+                        <span className="data-value">{dbrData?.bad_counts_industry || '0'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Bad Counts (UBL):</span>
+                        <span className="data-value">{dbrData?.bad_counts_ubl || '0'}</span>
+                      </div>
+                      <div className="data-row">
+                        <span className="data-label">Industry Exposure:</span>
+                        <span className="data-value">PKR {(dbrData?.exposure_in_industry || 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+         
         </div>
 
           {/* Right Panel - Results */}
           {showApplicationData && (
             <div style={{ 
               width: '55%',
-              minWidth: '700px'
+              minWidth: '700px',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              paddingRight: '10px'
             }}>
               {/* Critical Checks Section */}
               <div style={{
