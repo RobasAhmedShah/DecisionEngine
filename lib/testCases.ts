@@ -13,6 +13,7 @@ export interface TestCase {
   expectedAction: string;
   applicationData: any;
   cbsData?: any;
+  dbrData?: any;
   systemChecksData?: any;
   creditLimitData?: any;
   userStory: string;
@@ -51,6 +52,13 @@ export const testCases: TestCase[] = [
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
+    },
+    dbrData: {
+      existing_monthly_obligations: 0, // Clean customer with no existing debt
+      credit_card_limit: 0, // No existing credit cards
+      overdraft_annual_interest: 0, // No overdraft
+      // This creates: 0 + 0 + 0 = 0 total obligations
+      // DBR = 0 / 120,000 = 0% → PASS
     },
     cbsData: {
       average_deposit_balance: 500000,
@@ -145,6 +153,13 @@ export const testCases: TestCase[] = [
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
     },
+    dbrData: {
+      existing_monthly_obligations: 8000, // Some existing debt (car loan, etc)
+      credit_card_limit: 50000, // Small existing credit card
+      overdraft_annual_interest: 3000, // Minor overdraft usage
+      // This creates: 8,000 + 2,500 (CC 5%) + 250 (OD) = 10,750 total obligations
+      // DBR = 10,750 / 65,000 = 16.5% → PASS
+    },
     systemChecksData: {
       ecib_individual_check: true,
       ecib_corporate_check: true,
@@ -194,13 +209,13 @@ export const testCases: TestCase[] = [
   },
   {
     id: 'case-3',
-    name: 'High DBR Failure',
-    description: 'Application with excessive debt-to-income ratio - should fail',
+    name: 'High DBR Failure - Existing Obligations',
+    description: 'Credit card applicant with excessive existing debt obligations - should fail',
     category: 'failure',
-    expectedScore: '0',
+    expectedScore: '0-30',
     expectedDecision: 'FAIL',
     expectedAction: 'DBR exceeds threshold',
-    userStory: 'As a bank, I want to automatically decline applications with excessive debt-to-income ratios to minimize credit risk.',
+    userStory: 'As a bank, I want to automatically decline credit card applications from customers with excessive existing debt obligations to minimize credit risk.',
     applicationData: {
       applicationId: 1003,
       full_name: 'Muhammad Hassan',
@@ -217,10 +232,17 @@ export const testCases: TestCase[] = [
       marital_status: 'Married',
       eavmu_submitted: true,
       salary_transfer_flag: false,
-      proposed_loan_amount: 40000,
+      amount_requested: 50000, // Requesting 50k credit limit
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
+    },
+    dbrData: {
+      existing_monthly_obligations: 25000, // High existing debt: 25k/month
+      credit_card_limit: 100000, // Existing credit cards: 100k limit
+      overdraft_annual_interest: 12000, // 1k/month OD interest
+      // This creates: 25,000 + 5,000 (CC 5%) + 1,000 (OD) = 31,000 total obligations
+      // DBR = 31,000 / 35,000 = 88.5% → FAIL
     }
   },
   {
@@ -248,10 +270,17 @@ export const testCases: TestCase[] = [
       marital_status: 'Married',
       eavmu_submitted: true,
       salary_transfer_flag: true,
-      proposed_loan_amount: 25000,
+      amount_requested: 100000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
+    },
+    dbrData: {
+      existing_monthly_obligations: 15000, // Moderate existing debt
+      credit_card_limit: 200000, // Existing credit cards (higher limit)
+      overdraft_annual_interest: 6000, // Moderate overdraft
+      // This creates: 15,000 + 10,000 (CC 5%) + 500 (OD) = 25,500 total obligations
+      // DBR = 25,500 / 80,000 = 31.9% → PASS (but will fail on Age)
     },
     systemChecksData: {
       ecib_individual_check: true,
@@ -325,10 +354,17 @@ export const testCases: TestCase[] = [
       marital_status: 'Single',
       eavmu_submitted: true,
       salary_transfer_flag: false,
-      proposed_loan_amount: 35000,
+      amount_requested: 150000, // Credit card limit request
       spu_black_list_check: true,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
+    },
+    dbrData: {
+      existing_monthly_obligations: 12000, // Moderate debt
+      credit_card_limit: 80000, // Some existing credit cards
+      overdraft_annual_interest: 4000, // Some overdraft usage
+      // This creates: 12,000 + 4,000 (CC 5%) + 333 (OD) = 16,333 total obligations
+      // DBR = 16,333 / 100,000 = 16.3% → PASS (but will fail on SPU)
     }
   },
   {
@@ -356,7 +392,7 @@ export const testCases: TestCase[] = [
       marital_status: 'Married',
       eavmu_submitted: true,
       salary_transfer_flag: false,
-      proposed_loan_amount: 30000,
+      amount_requested: 125000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
@@ -418,7 +454,7 @@ export const testCases: TestCase[] = [
       marital_status: 'Single',
       eavmu_submitted: true,
       salary_transfer_flag: false,
-      proposed_loan_amount: 20000,
+      amount_requested: 75000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
@@ -449,7 +485,7 @@ export const testCases: TestCase[] = [
       marital_status: 'Married',
       eavmu_submitted: true,
       salary_transfer_flag: true,
-      proposed_loan_amount: 40000,
+      amount_requested: 150000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
@@ -493,7 +529,7 @@ export const testCases: TestCase[] = [
       marital_status: 'Single',
       eavmu_submitted: true,
       salary_transfer_flag: false,
-      proposed_loan_amount: 25000,
+      amount_requested: 100000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
@@ -524,7 +560,7 @@ export const testCases: TestCase[] = [
       marital_status: 'Married',
       eavmu_submitted: true,
       salary_transfer_flag: false,
-      proposed_loan_amount: 50000,
+      amount_requested: 200000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false
@@ -601,7 +637,7 @@ export const testCases: TestCase[] = [
       marital_status: 'Married',
       eavmu_submitted: true,
       salary_transfer_flag: true,
-      proposed_loan_amount: 25000,
+      amount_requested: 100000, // Credit card limit request
       spu_black_list_check: false,
       spu_credit_card_30k_check: false,
       spu_negative_list_check: false

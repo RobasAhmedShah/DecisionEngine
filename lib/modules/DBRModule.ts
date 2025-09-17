@@ -138,9 +138,9 @@ export default class DBRModule {
     let notes: string[] = [];
     let netIncome = 0;
     let totalObligations = 0;
-    // SBP R-3 decision bands (adjusted for credit cards): PASS ≤50, CONDITIONAL ≤60, FAIL >60
-    const PASS_THRESHOLD = 50;
-    const CONDITIONAL_THRESHOLD = 60;
+    // SBP R-3 decision bands (adjusted for credit cards): PASS ≤40, CONDITIONAL ≤50, FAIL >50
+    const PASS_THRESHOLD = 40;
+    const CONDITIONAL_THRESHOLD = 50;
     let threshold = CONDITIONAL_THRESHOLD; // for reporting and risk category
     let isWithinThreshold = false;
     let calculationMethod = 'FALLBACK';
@@ -232,34 +232,18 @@ export default class DBRModule {
       
       // Calculate DBR
       if (netIncomeValue > 0) {
-        // Compute proposed EMI
-        let proposedEmi = 0;
+        // Credit Card DBR Calculation
+        // For credit cards, we only consider existing obligations, NOT the requested credit limit
+        let proposedEmi = 0; // Credit cards don't have a "proposed EMI"
+        
         if (!isNaN(monthlyInstallment) && monthlyInstallment > 0) {
+          // If there's an explicit monthly installment (rare for credit cards), use it
           proposedEmi = monthlyInstallment;
-          notes.push('Using provided monthly_installment for proposed EMI');
-        } else if (principal > 0 && tenureMonths > 0) {
-          if (input.zero_interest) {
-            proposedEmi = principal / tenureMonths;
-            notes.push('Zero-interest plan detected: EMI = Principal / Tenure');
-          } else if (annualRate > 0) {
-            const r = annualRate / 12; // monthly rate
-            const n = tenureMonths;
-            const pow = Math.pow(1 + r, n);
-            proposedEmi = (principal * r * pow) / (pow - 1);
-            notes.push(`Interest-bearing EMI computed via SBP formula (r=${r.toFixed(6)}, n=${n})`);
-          } else {
-            proposedEmi = principal / tenureMonths; // fallback if no rate provided
-            notes.push('No rate provided; approximating EMI as Principal / Tenure');
-          }
-        } else if (loanAmount > 0) {
-          // Backward-compat: if only loanAmount provided, treat as monthly obligation (legacy behavior)
-          proposedEmi = loanAmount;
-          notes.push('Legacy input: treating proposed_loan_amount as monthly obligation');
-        } else if (parseFloat(String(input.amount_requested || input.amountRequested || 0)) > 0) {
-          // For credit cards, amount_requested is the credit limit, not a monthly obligation
-          // DBR should only consider existing obligations, not the requested credit limit
+          notes.push('Using provided monthly_installment');
+        } else {
+          // Standard credit card logic: no proposed EMI
           proposedEmi = 0;
-          notes.push('Credit card application: amount_requested is credit limit, not monthly obligation');
+          notes.push('Credit card application: requested limit does not create monthly obligation');
         }
 
         const totalMonthlyObligations = (existingObligations || 0) + ccComponent + odMonthly + (proposedEmi || 0);

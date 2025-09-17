@@ -42,8 +42,13 @@ export default class AgeModule {
    * Calculate years between two dates
    */
   private yearsBetween(d1: Date | null, d2: Date): number | null {
-    if (!(d1 instanceof Date) || isNaN(d1.getTime()) || !(d2 instanceof Date) || isNaN(d2.getTime())) return null;
-    return Math.floor((d2.getTime() - d1.getTime()) / (365.25 * 24 * 3600 * 1000));
+    if (!d1 || !(d1 instanceof Date) || isNaN(d1.getTime()) || !(d2 instanceof Date) || isNaN(d2.getTime())) {
+      console.log('❌ Date validation failed:', { d1, d2, d1Valid: d1 instanceof Date, d2Valid: d2 instanceof Date });
+      return null;
+    }
+    const years = Math.floor((d2.getTime() - d1.getTime()) / (365.25 * 24 * 3600 * 1000));
+    console.log('✅ Age calculation:', { dob: d1.toISOString(), now: d2.toISOString(), years });
+    return years;
   }
 
   /**
@@ -71,7 +76,17 @@ export default class AgeModule {
 
     const occ = String(input.occupation || "").toLowerCase();
     const status = String(input.employment_status || "").toLowerCase();
-    const dob = input.date_of_birth ? new Date(input.date_of_birth) : null;
+    
+    // Robust date parsing
+    let dob: Date | null = null;
+    if (input.date_of_birth) {
+      console.log('🔍 Parsing DOB:', input.date_of_birth, 'type:', typeof input.date_of_birth);
+      dob = new Date(input.date_of_birth);
+      console.log('📅 Parsed date:', dob, 'valid:', !isNaN(dob.getTime()));
+      if (isNaN(dob.getTime())) {
+        dob = null;
+      }
+    }
 
     const age = this.yearsBetween(dob, this.NOW);
 

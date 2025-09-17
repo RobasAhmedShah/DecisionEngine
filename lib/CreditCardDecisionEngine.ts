@@ -533,33 +533,33 @@ export default class CreditCardDecisionEngine {
     // Check for critical failures (hard stops) first
     if (this.ageModule.isCriticalFailure(ageResult)) {
       return this.buildFailureResult(applicationData, 'Age validation failed', ageResult.notes[0] || 'Age validation failed', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
-      });
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult, incomeVerification: incomeVerificationResult, verificationFramework: verificationFrameworkResult, specialSegments: specialSegmentsResult, documentationCompliance: documentationComplianceResult
+      }, true);
     }
 
     if (this.spuModule.isCriticalFailure(spuResult)) {
       return this.buildFailureResult(applicationData, 'SPU Critical Hit - Automatic Fail', 'SPU Critical Hit - Automatic Fail', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
-      });
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult,         systemChecks: systemChecksResult, creditLimit: creditLimitResult, incomeVerification: incomeVerificationResult, verificationFramework: verificationFrameworkResult, specialSegments: specialSegmentsResult, documentationCompliance: documentationComplianceResult
+      }, true);
     }
 
     if (this.cityModule.isCriticalFailure(cityResult)) {
       return this.buildFailureResult(applicationData, 'Annexure A Area - Automatic Fail', 'Annexure A Area - Automatic Fail', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
-      });
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult,         systemChecks: systemChecksResult, creditLimit: creditLimitResult, incomeVerification: incomeVerificationResult, verificationFramework: verificationFrameworkResult, specialSegments: specialSegmentsResult, documentationCompliance: documentationComplianceResult
+      }, true);
     }
 
     if (this.dbrModule.isCriticalFailure(dbrResult)) {
       return this.buildFailureResult(applicationData, `DBR ${dbrResult.dbrPercentage.toFixed(2)}% exceeds threshold ${dbrResult.dbrThreshold}%`, `DBR ${dbrResult.dbrPercentage.toFixed(2)}% exceeds threshold ${dbrResult.dbrThreshold}%`, dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
-      });
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult,         systemChecks: systemChecksResult, creditLimit: creditLimitResult, incomeVerification: incomeVerificationResult, verificationFramework: verificationFrameworkResult, specialSegments: specialSegmentsResult, documentationCompliance: documentationComplianceResult
+      }, true);
     }
 
     // Check system checks critical failures
     if (systemChecksResult.decision === 'DECLINE') {
       return this.buildFailureResult(applicationData, 'System Checks Critical Hit - Automatic Fail', 'System Checks Critical Hit - Automatic Fail', dbrResult, {
-        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult, systemChecks: systemChecksResult, creditLimit: creditLimitResult
-      });
+        spu: spuResult, eamvu: eamvuResult, city: cityResult, age: ageResult, income: incomeResult, dbr: dbrResult, applicationScore: applicationScoreResult, behavioralScore: behavioralScoreResult,         systemChecks: systemChecksResult, creditLimit: creditLimitResult, incomeVerification: incomeVerificationResult, verificationFramework: verificationFrameworkResult, specialSegments: specialSegmentsResult, documentationCompliance: documentationComplianceResult
+      }, true);
     }
 
     // Calculate weighted final score using dynamic weights based on customer type
@@ -574,7 +574,12 @@ export default class CreditCardDecisionEngine {
       (cityResult.score * this.cityModule.getWeight()) +
       (incomeResult.score * this.incomeModule.getWeight()) +
       (applicationScoreResult.score * applicationScoreWeight) +
-      (behavioralScoreResult.score * behavioralScoreWeight)
+      (behavioralScoreResult.score * behavioralScoreWeight) +
+      // Framework modules (lower weights for compliance/verification)
+      (incomeVerificationResult.score * 0.03) +  // 3% weight
+      (verificationFrameworkResult.score * 0.02) + // 2% weight
+      (specialSegmentsResult.score * 0.02) +     // 2% weight
+      (documentationComplianceResult.score * 0.03) // 3% weight
     );
 
     console.log('📊 WEIGHTED CALCULATION:');
@@ -670,13 +675,46 @@ export default class CreditCardDecisionEngine {
       behavioralScore: BehavioralScoreResult;
       systemChecks?: SystemChecksResult;
       creditLimit?: CreditLimitResult;
-    }
+      incomeVerification?: IncomeVerificationResult;
+      verificationFramework?: VerificationFrameworkResult;
+      specialSegments?: SpecialSegmentsResult;
+      documentationCompliance?: DocumentationComplianceResult;
+    },
+    isHardStop: boolean = false
   ): DecisionResult {
+    // For hard stops, force final score to 0. Otherwise, calculate actual weighted score (for transparency)
+    let calculatedScore = 0;
+    
+    if (isHardStop) {
+      console.log('🚨 HARD STOP DETECTED - Final Score forced to 0');
+      calculatedScore = 0;
+    } else {
+      const isETB = applicationData.is_ubl_customer === true || applicationData.is_ubl_customer === "true";
+      const applicationScoreWeight = this.applicationScoreModule.getWeight(isETB);
+      const behavioralScoreWeight = isETB ? this.behavioralScoreModule.getWeight() : 0;
+
+      calculatedScore = Math.round(
+        (moduleResults.dbr.score * this.dbrModule.getWeight()) +
+        (moduleResults.spu.score * this.spuModule.getWeight()) +
+        (moduleResults.eamvu.score * this.eamvuModule.getWeight()) +
+        (moduleResults.age.score * this.ageModule.getWeight()) +
+        (moduleResults.city.score * this.cityModule.getWeight()) +
+        (moduleResults.income.score * this.incomeModule.getWeight()) +
+        (moduleResults.applicationScore.score * applicationScoreWeight) +
+        (moduleResults.behavioralScore.score * behavioralScoreWeight) +
+        // Framework modules (with null safety)
+        (((moduleResults as any).incomeVerification?.score || 0) * 0.03) +
+        (((moduleResults as any).verificationFramework?.score || 0) * 0.02) +
+        (((moduleResults as any).specialSegments?.score || 0) * 0.02) +
+        (((moduleResults as any).documentationCompliance?.score || 0) * 0.03)
+      );
+    }
+
     return {
       applicationId: applicationData.applicationId || applicationData.id || applicationData.los_id || 0,
       customerName: applicationData.full_name || applicationData.customerName || `${applicationData.first_name || ''} ${applicationData.last_name || ''}`.trim() || 'Unknown',
       cnic: applicationData.cnic || '',
-      finalScore: 0,
+      finalScore: calculatedScore,
       decision: 'FAIL',
       actionRequired,
       riskLevel: 'VERY_HIGH',
@@ -692,10 +730,10 @@ export default class CreditCardDecisionEngine {
         behavioralScore: { score: moduleResults.behavioralScore.score, details: moduleResults.behavioralScore },
         systemChecks: { score: (moduleResults as any).systemChecks?.score || 0, details: (moduleResults as any).systemChecks || {} },
         creditLimit: { score: (moduleResults as any).creditLimit?.score || 0, details: (moduleResults as any).creditLimit || {} },
-        incomeVerification: { score: 0, details: {} as IncomeVerificationResult },
-        verificationFramework: { score: 0, details: {} as VerificationFrameworkResult },
-        specialSegments: { score: 0, details: {} as SpecialSegmentsResult },
-        documentationCompliance: { score: 0, details: {} as DocumentationComplianceResult }
+        incomeVerification: { score: (moduleResults as any).incomeVerification?.score || 0, details: (moduleResults as any).incomeVerification || {} },
+        verificationFramework: { score: (moduleResults as any).verificationFramework?.score || 0, details: (moduleResults as any).verificationFramework || {} },
+        specialSegments: { score: (moduleResults as any).specialSegments?.score || 0, details: (moduleResults as any).specialSegments || {} },
+        documentationCompliance: { score: (moduleResults as any).documentationCompliance?.score || 0, details: (moduleResults as any).documentationCompliance || {} }
       }
     };
   }
