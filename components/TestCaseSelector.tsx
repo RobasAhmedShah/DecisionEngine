@@ -32,6 +32,7 @@ interface TestCaseSelectorProps {
   onCalculateDecision: () => Promise<void>;
   onResetForm: () => void;
   calculating: boolean;
+  applicationData: any;
 }
 
 export const TestCaseSelector: React.FC<TestCaseSelectorProps> = ({
@@ -40,6 +41,7 @@ export const TestCaseSelector: React.FC<TestCaseSelectorProps> = ({
   onCalculateDecision,
   onResetForm,
   calculating,
+  applicationData,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -159,7 +161,28 @@ export const TestCaseSelector: React.FC<TestCaseSelectorProps> = ({
               size="large"
               startIcon={<RefreshIcon />}
               onClick={onResetForm}
+              disabled={!applicationData}
               fullWidth
+              sx={{
+                ...(applicationData && {
+                  backgroundColor: '#1976D2',
+                  color: 'white',
+                  borderColor: '#1976D2',
+                  '&:hover': {
+                    backgroundColor: '#1565C0',
+                    borderColor: '#1565C0',
+                    color: 'white',
+                  },
+                }),
+                ...(!applicationData && {
+                  color: '#9E9E9E',
+                  borderColor: '#E0E0E0',
+                  '&:disabled': {
+                    color: '#9E9E9E',
+                    borderColor: '#E0E0E0',
+                  },
+                }),
+              }}
             >
               Reset Form
             </Button>

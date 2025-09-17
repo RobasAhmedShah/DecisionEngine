@@ -17,15 +17,21 @@ export const UBLAppBar: React.FC = () => {
     <AppBar position="static" elevation={2}>
       <Toolbar>
         <BankIcon sx={{ mr: 2 }} />
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600, color: 'white' }}>
           UBL Credit Card Decision Engine
         </Typography>
         <Chip
-          icon={<SecurityIcon />}
+          icon={<SecurityIcon style={{ color: 'white' }} />}
           label="Production Ready"
-          color="secondary"
           variant="filled"
-          sx={{ mr: 2 }}
+          sx={{ 
+            mr: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            '& .MuiChip-label': {
+              color: 'white'
+            }
+          }}
         />
         <IconButton color="inherit">
           <AccountCircleIcon />

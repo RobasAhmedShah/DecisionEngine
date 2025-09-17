@@ -75,6 +75,7 @@ export const APIFetchedData: React.FC<APIFetchedDataProps> = ({
         title="API Fetched Data"
         action={
           <IconButton
+            style={{ color: 'white' }}
             onClick={() => setExpanded(!expanded)}
             aria-expanded={expanded}
             aria-label="show more"
