@@ -60,6 +60,7 @@ export default function CreditCardDecisionEngine() {
                 onCalculateDecision={calculateDecision}
                 onResetForm={resetForm}
                 calculating={calculating}
+                applicationData={applicationData}
               />
             </Grid>
 

@@ -1,20 +1,20 @@
 import { createTheme } from '@mui/material/styles';
 
-// UBL Bank Color Palette (Professional Banking Colors)
+// UBL Bank Color Palette (Professional Banking Colors - Blue Theme)
 const ublColors = {
-  // Primary UBL Green
+  // Primary UBL Blue
   primary: {
-    main: '#006B3F', // UBL Signature Green
-    light: '#4CAF50',
-    dark: '#004D2F',
+    main: '#1976D2', // Professional Blue
+    light: '#42A5F5',
+    dark: '#1565C0',
     contrastText: '#FFFFFF',
   },
-  // Secondary Gold/Yellow (Premium Banking)
+  // Secondary Blue Accent (Premium Banking)
   secondary: {
-    main: '#FFD700', // Elegant Gold
-    light: '#FFF176',
-    dark: '#FFA000',
-    contrastText: '#000000',
+    main: '#2196F3', // Light Blue Accent
+    light: '#64B5F6',
+    dark: '#1976D2',
+    contrastText: '#FFFFFF',
   },
   // Professional Success Colors
   success: {
@@ -49,7 +49,7 @@ const ublColors = {
     default: '#F8F9FA', // Light professional background
     paper: '#FFFFFF',
     light: '#FAFBFC',
-    dark: '#E8F5E8', // Subtle green tint
+    dark: '#E3F2FD', // Subtle blue tint
   },
   // Text Colors
   text: {
@@ -162,30 +162,30 @@ export const ublTheme = createTheme({
   },
   shadows: [
     'none',
-    '0px 1px 3px rgba(0, 107, 63, 0.08), 0px 1px 2px rgba(0, 107, 63, 0.12)',
-    '0px 1px 5px rgba(0, 107, 63, 0.08), 0px 2px 2px rgba(0, 107, 63, 0.12)',
-    '0px 1px 8px rgba(0, 107, 63, 0.08), 0px 3px 4px rgba(0, 107, 63, 0.12)',
-    '0px 2px 4px rgba(0, 107, 63, 0.08), 0px 4px 5px rgba(0, 107, 63, 0.12)',
-    '0px 3px 5px rgba(0, 107, 63, 0.08), 0px 5px 8px rgba(0, 107, 63, 0.12)',
-    '0px 3px 5px rgba(0, 107, 63, 0.08), 0px 6px 10px rgba(0, 107, 63, 0.12)',
-    '0px 4px 5px rgba(0, 107, 63, 0.08), 0px 8px 10px rgba(0, 107, 63, 0.12)',
-    '0px 5px 5px rgba(0, 107, 63, 0.08), 0px 10px 14px rgba(0, 107, 63, 0.12)',
-    '0px 5px 6px rgba(0, 107, 63, 0.08), 0px 12px 17px rgba(0, 107, 63, 0.12)',
-    '0px 6px 6px rgba(0, 107, 63, 0.08), 0px 14px 20px rgba(0, 107, 63, 0.12)',
-    '0px 6px 7px rgba(0, 107, 63, 0.08), 0px 16px 24px rgba(0, 107, 63, 0.12)',
-    '0px 7px 8px rgba(0, 107, 63, 0.08), 0px 18px 28px rgba(0, 107, 63, 0.12)',
-    '0px 7px 8px rgba(0, 107, 63, 0.08), 0px 20px 32px rgba(0, 107, 63, 0.12)',
-    '0px 7px 9px rgba(0, 107, 63, 0.08), 0px 22px 35px rgba(0, 107, 63, 0.12)',
-    '0px 8px 9px rgba(0, 107, 63, 0.08), 0px 24px 38px rgba(0, 107, 63, 0.12)',
-    '0px 8px 10px rgba(0, 107, 63, 0.08), 0px 26px 42px rgba(0, 107, 63, 0.12)',
-    '0px 8px 11px rgba(0, 107, 63, 0.08), 0px 28px 45px rgba(0, 107, 63, 0.12)',
-    '0px 9px 11px rgba(0, 107, 63, 0.08), 0px 30px 48px rgba(0, 107, 63, 0.12)',
-    '0px 9px 12px rgba(0, 107, 63, 0.08), 0px 32px 52px rgba(0, 107, 63, 0.12)',
-    '0px 10px 13px rgba(0, 107, 63, 0.08), 0px 34px 55px rgba(0, 107, 63, 0.12)',
-    '0px 10px 13px rgba(0, 107, 63, 0.08), 0px 36px 58px rgba(0, 107, 63, 0.12)',
-    '0px 10px 14px rgba(0, 107, 63, 0.08), 0px 38px 61px rgba(0, 107, 63, 0.12)',
-    '0px 11px 14px rgba(0, 107, 63, 0.08), 0px 40px 65px rgba(0, 107, 63, 0.12)',
-    '0px 11px 15px rgba(0, 107, 63, 0.08), 0px 42px 68px rgba(0, 107, 63, 0.12)',
+    '0px 1px 3px rgba(25, 118, 210, 0.08), 0px 1px 2px rgba(25, 118, 210, 0.12)',
+    '0px 1px 5px rgba(25, 118, 210, 0.08), 0px 2px 2px rgba(25, 118, 210, 0.12)',
+    '0px 1px 8px rgba(25, 118, 210, 0.08), 0px 3px 4px rgba(25, 118, 210, 0.12)',
+    '0px 2px 4px rgba(25, 118, 210, 0.08), 0px 4px 5px rgba(25, 118, 210, 0.12)',
+    '0px 3px 5px rgba(25, 118, 210, 0.08), 0px 5px 8px rgba(25, 118, 210, 0.12)',
+    '0px 3px 5px rgba(25, 118, 210, 0.08), 0px 6px 10px rgba(25, 118, 210, 0.12)',
+    '0px 4px 5px rgba(25, 118, 210, 0.08), 0px 8px 10px rgba(25, 118, 210, 0.12)',
+    '0px 5px 5px rgba(25, 118, 210, 0.08), 0px 10px 14px rgba(25, 118, 210, 0.12)',
+    '0px 5px 6px rgba(25, 118, 210, 0.08), 0px 12px 17px rgba(25, 118, 210, 0.12)',
+    '0px 6px 6px rgba(25, 118, 210, 0.08), 0px 14px 20px rgba(25, 118, 210, 0.12)',
+    '0px 6px 7px rgba(25, 118, 210, 0.08), 0px 16px 24px rgba(25, 118, 210, 0.12)',
+    '0px 7px 8px rgba(25, 118, 210, 0.08), 0px 18px 28px rgba(25, 118, 210, 0.12)',
+    '0px 7px 8px rgba(25, 118, 210, 0.08), 0px 20px 32px rgba(25, 118, 210, 0.12)',
+    '0px 7px 9px rgba(25, 118, 210, 0.08), 0px 22px 35px rgba(25, 118, 210, 0.12)',
+    '0px 8px 9px rgba(25, 118, 210, 0.08), 0px 24px 38px rgba(25, 118, 210, 0.12)',
+    '0px 8px 10px rgba(25, 118, 210, 0.08), 0px 26px 42px rgba(25, 118, 210, 0.12)',
+    '0px 8px 11px rgba(25, 118, 210, 0.08), 0px 28px 45px rgba(25, 118, 210, 0.12)',
+    '0px 9px 11px rgba(25, 118, 210, 0.08), 0px 30px 48px rgba(25, 118, 210, 0.12)',
+    '0px 9px 12px rgba(25, 118, 210, 0.08), 0px 32px 52px rgba(25, 118, 210, 0.12)',
+    '0px 10px 13px rgba(25, 118, 210, 0.08), 0px 34px 55px rgba(25, 118, 210, 0.12)',
+    '0px 10px 13px rgba(25, 118, 210, 0.08), 0px 36px 58px rgba(25, 118, 210, 0.12)',
+    '0px 10px 14px rgba(25, 118, 210, 0.08), 0px 38px 61px rgba(25, 118, 210, 0.12)',
+    '0px 11px 14px rgba(25, 118, 210, 0.08), 0px 40px 65px rgba(25, 118, 210, 0.12)',
+    '0px 11px 15px rgba(25, 118, 210, 0.08), 0px 42px 68px rgba(25, 118, 210, 0.12)',
   ],
   spacing: 8, // 8px base spacing unit
   components: {
@@ -219,7 +219,7 @@ export const ublTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: ublColors.primary.main,
-          boxShadow: '0px 2px 8px rgba(0, 107, 63, 0.15)',
+          boxShadow: '0px 2px 8px rgba(25, 118, 210, 0.15)',
         },
       },
     },
@@ -227,11 +227,11 @@ export const ublTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '16px',
-          boxShadow: '0px 4px 16px rgba(0, 107, 63, 0.08)',
+          boxShadow: '0px 4px 16px rgba(25, 118, 210, 0.08)',
           transition: 'all 0.3s ease-in-out',
           '&:hover': {
             transform: 'translateY(-2px)',
-            boxShadow: '0px 8px 24px rgba(0, 107, 63, 0.12)',
+            boxShadow: '0px 8px 24px rgba(25, 118, 210, 0.12)',
           },
         },
       },
@@ -239,7 +239,7 @@ export const ublTheme = createTheme({
     MuiCardHeader: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(0, 107, 63, 0.02)',
+          backgroundColor: 'rgba(25, 118, 210, 0.02)',
           borderBottom: `1px solid ${ublColors.divider}`,
         },
         title: {
@@ -271,9 +271,10 @@ export const ublTheme = createTheme({
         },
         containedSecondary: {
           background: `linear-gradient(45deg, ${ublColors.secondary.main} 30%, ${ublColors.secondary.light} 90%)`,
-          color: ublColors.text.primary,
+          color: '#FFFFFF',
           '&:hover': {
             background: `linear-gradient(45deg, ${ublColors.secondary.dark} 30%, ${ublColors.secondary.main} 90%)`,
+            color: '#FFFFFF',
           },
         },
       },
@@ -373,13 +374,13 @@ export const ublTheme = createTheme({
           backgroundImage: 'none', // Remove default Material UI gradient
         },
         elevation1: {
-          boxShadow: '0px 2px 8px rgba(0, 107, 63, 0.08)',
+          boxShadow: '0px 2px 8px rgba(25, 118, 210, 0.08)',
         },
         elevation2: {
-          boxShadow: '0px 4px 12px rgba(0, 107, 63, 0.10)',
+          boxShadow: '0px 4px 12px rgba(25, 118, 210, 0.10)',
         },
         elevation3: {
-          boxShadow: '0px 6px 16px rgba(0, 107, 63, 0.12)',
+          boxShadow: '0px 6px 16px rgba(25, 118, 210, 0.12)',
         },
       },
     },

@@ -1095,9 +1095,9 @@ export default function CreditCardDecisionEngine() {
                   cursor: 'pointer',
                   fontSize: '16px',
                   fontWeight: '600'
-                }}
+                }} 
               >
-                🔄 Reset Form
+                <span className="text-white">🔄 Reset Form </span>
               </button>
                 </div>
               </div>
